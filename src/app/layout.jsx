@@ -22,7 +22,7 @@ export default function RootLayout({ children }) {
         )}
       >
           <SmoothScrolling>
-          {/* <InitialLoadingScreen /> */}
+          <InitialLoadingScreen />
           <Transtionprovider>
             {children}
             </Transtionprovider>

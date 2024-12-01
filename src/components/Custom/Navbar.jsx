@@ -116,53 +116,52 @@ const Navbar = ({ background }) => {
           </button>
           <div
             id="drawer"
-            className="w-full z-50 h-screen overflow-hidden fixed top-0 right-0 backdrop-blur-lg text-white font-neue_montreal translate-x-full"
+            className="w-full z-50 h-screen overflow-hidden fixed top-0 right-0 bg-slate-900/95 backdrop-blur-sm text-white font-neue_montreal translate-x-full"
           >
-            <div className="text-white relative w-full h-full px-4 flex flex-col justify-center items-center gap-5 overflow-y-auto">
-            <Link
-                className="btn font-neue_montreal_Medium text-black relative overflow-hidden group  px-2 py-1 rounded-full"
-                href="/"
-              >
-                <span className="relative z-10 group-hover:text-black transition-colors duration-300">
-                  Home
-                </span>
-                <span className="absolute inset-0 bg-white transform scale-y-0 origin-bottom group-hover:scale-y-100 transition-transform duration-300 ease-out"></span>
-                <span className="absolute bottom-0 left-0 w-full h-[2px] bg-black transform scale-x-0 origin-right transition-transform duration-300 ease-out group-hover:scale-x-100 group-hover:origin-left"></span>
-              </Link>
-              <Link
-                className="btn font-neue_montreal_Medium text-black relative overflow-hidden group  px-2 py-1 rounded-full"
-                href="/About"
-              >
-                <span className="relative z-10 group-hover:text-black transition-colors duration-300">
-                  About
-                </span>
-                <span className="absolute inset-0 bg-white transform scale-y-0 origin-bottom group-hover:scale-y-100 transition-transform duration-300 ease-out"></span>
-                <span className="absolute bottom-0 left-0 w-full h-[2px] bg-black transform scale-x-0 origin-right transition-transform duration-300 ease-out group-hover:scale-x-100 group-hover:origin-left"></span>
-              </Link>
-              <div className="fixed left-5 top-10 rounded-full transition-all bg-red-400 hover:text-red-400 hover:bg-white hover:border-red-400 hover:border-[1px]">
-                <button onClick={drawer} className="p-4">
-                  <AiOutlineClose />
+            <div className="text-white relative w-full h-full px-4 flex flex-col justify-center items-center gap-8 overflow-y-auto">
+              <div className="fixed left-5 top-5 rounded-full transition-all bg-slate-800 hover:bg-slate-700">
+                <button
+                  onClick={drawer}
+                  className="p-4 text-slate-200 hover:text-white"
+                >
+                  <AiOutlineClose size={24} />
                 </button>
               </div>
+
               <Link
-                className="btn font-neue_montreal_Medium text-black relative overflow-hidden group  px-2 py-1 rounded-full"
-                href="/Projects"
+                className="w-64 text-center font-neue_montreal_Medium relative overflow-hidden group px-6 py-3 rounded-lg bg-slate-800 hover:bg-slate-700"
+                href="/"
               >
-                <span className="relative z-10 group-hover:text-black transition-colors duration-300">
-                  Projects
+                <span className="relative z-10 text-slate-200 group-hover:text-white transition-colors duration-300">
+                  Dashboard
                 </span>
-                <span className="absolute inset-0 bg-white transform scale-y-0 origin-bottom group-hover:scale-y-100 transition-transform duration-300 ease-out"></span>
-                <span className="absolute bottom-0 left-0 w-full h-[2px] bg-black transform scale-x-0 origin-right transition-transform duration-300 ease-out group-hover:scale-x-100 group-hover:origin-left"></span>
               </Link>
+
               <Link
-                className="btn font-neue_montreal_Medium text-black relative overflow-hidden group  px-2 py-1 rounded-full"
-                href="/Contact"
+                className="w-64 text-center font-neue_montreal_Medium relative overflow-hidden group px-6 py-3 rounded-lg bg-slate-800 hover:bg-slate-700"
+                href="/Interviews"
               >
-                <span className="relative z-10 group-hover:text-black transition-colors duration-300">
-                  Contact
+                <span className="relative z-10 text-slate-200 group-hover:text-white transition-colors duration-300">
+                  Interviews
                 </span>
-                <span className="absolute inset-0 bg-white transform scale-y-0 origin-bottom group-hover:scale-y-100 transition-transform duration-300 ease-out"></span>
-                <span className="absolute bottom-0 left-0 w-full h-[2px] bg-black transform scale-x-0 origin-right transition-transform duration-300 ease-out group-hover:scale-x-100 group-hover:origin-left"></span>
+              </Link>
+
+              <Link
+                className="w-64 text-center font-neue_montreal_Medium relative overflow-hidden group px-6 py-3 rounded-lg bg-slate-800 hover:bg-slate-700"
+                href="/My-Interviews"
+              >
+                <span className="relative z-10 text-slate-200 group-hover:text-white transition-colors duration-300">
+                  My Interviews
+                </span>
+              </Link>
+
+              <Link
+                className="w-64 text-center font-neue_montreal_Medium relative overflow-hidden group px-6 py-3 rounded-lg bg-slate-800 hover:bg-slate-700"
+                href="/Interviews/generate"
+              >
+                <span className="relative z-10 text-slate-200 group-hover:text-white transition-colors duration-300">
+                  Generate Interview
+                </span>
               </Link>
             </div>
           </div>
@@ -173,7 +172,6 @@ const Navbar = ({ background }) => {
             { name: "Dashboard", url: "/" },
             { name: "Interviews", url: "/Interviews" },
             { name: "My Interviews", url: "/My-Interviews" },
-            { name: "Contact", url: "/Contact" },
           ].map((item, indx) => (
             <NavLink key={indx} href={item.url}>
               {item.name}

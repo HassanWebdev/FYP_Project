@@ -23,8 +23,8 @@ export async function GET(request) {
     // Connect to database
     await connectToDB();
 
-    // Find all interviews for the user
-    const interviews = await Interview.find({ userId: userId });
+    // Find all interviews for the user, sorted by createdAt in descending order
+    const interviews = await Interview.find({ userId: userId }).sort({ createdAt: -1 });
 
     return NextResponse.json(
       { success: true, data: interviews },
