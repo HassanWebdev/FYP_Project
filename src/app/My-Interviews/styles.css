@@ -1,0 +1,39 @@
+/* Override Ant Design Tab styles */
+.ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #3b82f6 !important; /* Blue-500 color */
+}
+
+.ant-tabs-ink-bar {
+  background: #3b82f6 !important;
+}
+
+.ant-tabs-tab:hover .ant-tabs-tab-btn {
+  color: #3b82f6 !important;
+}
+
+.ant-tabs-tab-btn {
+  color: #e2e8f0 !important; /* Slate-200 color */
+}
+
+/* Card styles */
+.ant-card-head-title {
+  color: #e2e8f0 !important;
+}
+
+.ant-card {
+  background: #1e293b !important; /* Slate-800 */
+  border: 1px solid #334155 !important; /* Slate-700 */
+}
+
+.ant-card:hover {
+  border-color: #3b82f6 !important;
+}
+
+/* Button styles */
+.ant-btn-primary {
+  background-color: #3b82f6 !important;
+}
+
+.ant-btn-primary:hover {
+  background-color: #2563eb !important; /* Blue-600 */
+}

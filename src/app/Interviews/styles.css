@@ -1,0 +1,30 @@
+/* Custom styling for Ant Design Tabs */
+.custom-tabs .ant-tabs-tab {
+  color: #94a3b8 !important; /* Default tab text color */
+  font-size: 1rem;
+  padding: 12px 24px;
+  transition: all 0.3s ease;
+}
+
+.custom-tabs .ant-tabs-tab:hover {
+  color: #60a5fa !important; /* Hover color */
+}
+
+.custom-tabs .ant-tabs-tab.ant-tabs-tab-active {
+  background: transparent !important;
+}
+
+.custom-tabs .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #60a5fa !important; /* Active tab text color */
+  font-weight: 600;
+}
+
+.custom-tabs .ant-tabs-ink-bar {
+  background: #60a5fa !important; /* Active tab indicator color */
+  height: 3px !important;
+}
+
+.custom-tabs .ant-tabs-nav::before {
+  border-bottom: 1px solid #334155 !important; /* Tab bar border color */
+}
+
