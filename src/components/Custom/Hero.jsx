@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import dynamic from "next/dynamic";
 import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
+import withauth from "./withauth";
 
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
@@ -372,4 +373,4 @@ function Hero() {
   );
 }
 
-export default Hero;
+export default withauth(Hero);

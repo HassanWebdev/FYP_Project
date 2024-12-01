@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Card, Tabs } from "antd";
 import { EyeOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
@@ -7,10 +7,25 @@ import Navbar from "@/components/Custom/Navbar";
 import "./styles.css";
 import Link from "next/link";
 import withauth from "@/components/Custom/withauth";
+import axios from "../../lib/axioshttp";
 
 function Page() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("1");
+  const [Interviews, setInterviews] = useState([]);
+
+  useEffect(() => {
+    const fetchInterviews = async () => {
+      try {
+        const res = await axios.get("/GetInterviews");
+        setInterviews(res?.data?.data);
+      } catch (error) {
+        console.error("Error fetching interviews:", error);
+        message.error("Failed to fetch interviews. Please try again.");
+      }
+    };
+    fetchInterviews();
+  }, []);
 
   const mockCases = [
     {
@@ -43,37 +58,52 @@ function Page() {
       ),
       children: (
         <div className="space-y-6">
-          {mockCases.map((m) => (
-            <Card
-              key={m.id}
-              title={<span className="text-slate-200">{m.title}</span>}
-              className="overflow-hidden bg-slate-800 border border-slate-700 hover:border-blue-500 transition-all duration-300"
-              extra={
-                <Button
-                  type="primary"
-                  className="bg-blue-500 hover:bg-blue-600"
-                  icon={<EyeOutlined />}
-                  onClick={() => {
-                    router.push(`/interviews/${m.id}`);
-                  }}
-                >
-                  View Interview
-                </Button>
-              }
-            >
-              <div className="text-slate-300">
-                <p className="line-clamp-2">
-                  {m.scenario.length > 50 
-                    ? m.scenario.substring(0, 50) + "..."
-                    : m.scenario
-                  }
-                </p>
-                <p className="mt-2 text-sm text-slate-400">
-                  Duration: {m.length}
+          {Interviews.length === 0 ? (
+            <div className="flex flex-col items-center justify-center p-10 bg-slate-800 rounded-xl border border-slate-700">
+              <div className="text-slate-300 text-center mb-6">
+                <h3 className="text-2xl font-semibold mb-2">
+                  No Interviews Found
+                </h3>
+                <p className="text-slate-400">
+                  You haven&apos;t created any interviews yet.
                 </p>
               </div>
-            </Card>
-          ))}
+              <Link
+                href="/Interviews/generate"
+                className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition-all duration-300 border-2 border-transparent hover:border-blue-400 shadow-lg hover:shadow-blue-500/25"
+              >
+                Create Your First Interview
+              </Link>
+            </div>
+          ) : (
+            Interviews.map((m) => (
+              <Card
+                key={m._id}
+                title={<span className="text-slate-200">{m?.title}</span>}
+                className="overflow-hidden bg-slate-800 border border-slate-700 hover:border-blue-500 transition-all duration-300"
+                extra={
+                  <Button
+                    type="primary"
+                    className="bg-blue-500 hover:bg-blue-600"
+                    icon={<EyeOutlined />}
+                    onClick={() => {
+                      router.push(`/Interviews/view/${m._id}`);
+                    }}
+                  >
+                    View Interview
+                  </Button>
+                }
+              >
+                <div className="text-slate-300">
+                  <p className="line-clamp-2">
+                    {m.scenario.length > 50
+                      ? m.scenario.substring(0, 50) + "..."
+                      : m.scenario}
+                  </p>
+                </div>
+              </Card>
+            ))
+          )}
         </div>
       ),
     },
@@ -84,7 +114,56 @@ function Page() {
           AI Generated Interviews
         </span>
       ),
-      children: "AI Generated Interviews",
+      children: (
+        <div className="space-y-6">
+          {Interviews.length === 0 ? (
+            <div className="flex flex-col items-center justify-center p-10 bg-slate-800 rounded-xl border border-slate-700">
+              <div className="text-slate-300 text-center mb-6">
+                <h3 className="text-2xl font-semibold mb-2">
+                  No Interviews Found
+                </h3>
+                <p className="text-slate-400">
+                  You haven&apos;t created any interviews yet.
+                </p>
+              </div>
+              <Link
+                href="/Interviews/generate"
+                className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition-all duration-300 border-2 border-transparent hover:border-blue-400 shadow-lg hover:shadow-blue-500/25"
+              >
+                Create Your First Interview
+              </Link>
+            </div>
+          ) : (
+            Interviews.map((m) => (
+              <Card
+                key={m._id}
+                title={<span className="text-slate-200">{m?.title}</span>}
+                className="overflow-hidden bg-slate-800 border border-slate-700 hover:border-blue-500 transition-all duration-300"
+                extra={
+                  <Button
+                    type="primary"
+                    className="bg-blue-500 hover:bg-blue-600"
+                    icon={<EyeOutlined />}
+                    onClick={() => {
+                      router.push(`/interviews/${m._id}`);
+                    }}
+                  >
+                    View Interview
+                  </Button>
+                }
+              >
+                <div className="text-slate-300">
+                  <p className="line-clamp-2">
+                    {m.scenario.length > 50
+                      ? m.scenario.substring(0, 50) + "..."
+                      : m.scenario}
+                  </p>
+                </div>
+              </Card>
+            ))
+          )}
+        </div>
+      ),
     },
   ];
 
@@ -100,7 +179,7 @@ function Page() {
               Interview Cases
             </h1>
           </div>
-          <Link 
+          <Link
             href="/Interviews/generate"
             className="relative z-20 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition-all duration-300 border-2 border-transparent hover:border-blue-400 shadow-lg hover:shadow-blue-500/25"
           >

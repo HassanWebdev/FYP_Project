@@ -5,6 +5,7 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import withauth from "./withauth";
 
 const Navbar = ({ background }) => {
   const [show, setshow] = useState(false);
@@ -184,4 +185,4 @@ const Navbar = ({ background }) => {
   );
 };
 
-export default Navbar;
+export default withauth(Navbar);

@@ -2,6 +2,9 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import withauth from "../../../components/Custom/withauth";
+import axios from "axios";
+import axiosPost from "../../../lib/axioshttp";
+import { message } from "antd";
 
 const Generate = () => {
   const router = useRouter();
@@ -111,7 +114,7 @@ const Generate = () => {
         },
       ],
     },
-  
+
     {
       key: "difficulty_level",
       label: "Difficulty Level",
@@ -144,24 +147,83 @@ const Generate = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    // Validate all fields are filled
-    const isValid = Object.values(formData).every((value) => value !== "");
+    const systemPrompt = `**Custom Instruction for Generating Detailed Case Prompts**
+When given specific fields such as Case Type, Main Business, and Difficulty Level, create a structured case prompt with the following essential sections:
+### **Interview Overview**
+**Interview Title:** [Create a compelling title related to the Main Business]
+**Difficulty Level:** [Insert Difficulty Level]
+**Interview Prompt:**  
+[Write a detailed scenario that sets the stage for the case study. Mention the company, its main business challenge, and competitive context if needed.]
+**Industry:** [Specify the related industry]
+**Interview Type:** [Insert Case Type]
+### **Exhibits**
+*Exhibit 1: [Provide a brief description, e.g., Market Analysis, Financials]*
+| Metric | Value | Notes |
+| --- | --- | --- |
+| [Key metric] | [Value] | [Additional information] |
 
-    if (!isValid) {
-      alert("Please fill all fields");
+*Exhibit 2: [Example: Competitor Analysis]*
+| Competitor | Market Share | Product/Service |
+| --- | --- | --- |
+| [Company Name] | [Percentage] | [Details] |`;
+
+    try {
+      const response = await axios.post(
+        "https://api.openai.com/v1/chat/completions",
+        {
+          model: "gpt-3.5-turbo",
+          messages: [
+            {
+              role: "system",
+              content: systemPrompt,
+            },
+            {
+              role: "user",
+              content: `Generate a case study with the following details:
+                    Case Type: ${formData.case_type}
+                    Main Business: ${formData.main_business}
+                    Difficulty Level: ${formData.difficulty_level}`,
+            },
+          ],
+          temperature: 0.7,
+        },
+        {
+          headers: {
+            Authorization: `Bearer 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`,
+          },
+        }
+      );
+      console.log("response", response);
+      const generatedCase = response?.data?.choices[0]?.message?.content;
+      if (generatedCase) {
+        const titleMatch = generatedCase.match(
+          /### \*\*Interview Overview\*\*\s*\n\*\*Interview Title:\*\* ([^\n]+)/
+        );
+        const title = titleMatch ? titleMatch[1].trim() : generatedCase;
+
+         const response =  await axiosPost.post("/InterviewCreation", {
+          title: title,
+          scenario: generatedCase,
+          feedback: "",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          isInterviewed: false,
+          interviewDate: null,
+          duration: 0,
+        });
+        message.success("Interview Case generated successfully");
+        router.push(`/Interviews/view/${response?.data?.interview_id}`)
+      }
+    } catch (error) {
+      console.error("Error generating case:", error);
+      message.error("Failed to generate case. Please try again.");
+    } finally {
       setLoading(false);
-      return;
     }
-
-    setTimeout(() => {
-      alert("Case created successfully!");
-      router.push("/interviews");
-      setLoading(false);
-    }, 1500);
   };
 
   return (
