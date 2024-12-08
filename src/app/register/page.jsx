@@ -1,24 +1,29 @@
 "use client";
 import { useState } from "react";
-import { Form, Input, Button, message } from "antd";
-import { UserOutlined, LockOutlined, MailOutlined } from "@ant-design/icons";
+import { Form, Input, Button, message, Select } from "antd";
+import { UserOutlined, LockOutlined, MailOutlined, KeyOutlined, PhoneOutlined } from "@ant-design/icons";
 import Link from "next/link";
 import axios from "../../lib/axioshttp";
 import { useRouter } from "next/navigation";
 
 export default function Register() {
   const [loading, setLoading] = useState(false);
+  const [role, setRole] = useState('user');
   const router = useRouter();
 
   const onFinish = async (values) => {
     setLoading(true);
     try {
-      const response = await axios.post("/Auth/register", {
+      console.log(values)
+
+      const response = await axios.post(process.env.NEXT_PUBLIC_API_URL + "/Auth/register", {
         name: values.fullName,
         email: values.email,
         password: values.password,
+        phone: values.phone,
+        role: values.role,
+        adminKey: values.adminKey
       });
-      console.log(response)
 
       if (response.data) {
         message.success("Registration successful!");
@@ -34,15 +39,15 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-[#0F172A] p-4">
-      <div className="w-full max-w-md bg-[#0F172A] !text-black rounded-xl p-8 shadow-[0_0_15px_rgba(0,0,0,0.2)] border border-gradient-to-r from-[#ffffff1a] via-[#ffffff1a] to-transparent">
-        <h1 className="text-4xl font-bold text-center mb-10 text-white">
+    <div className="min-h-screen w-full flex items-center justify-center !bg-[#0F172A] p-4" style={{backgroundColor: '#0F172A !important'}}>
+      <div className="w-full max-w-md !bg-[#0F172A] !text-black rounded-xl p-8 shadow-[0_0_15px_rgba(0,0,0,0.2)] border border-gradient-to-r from-[#ffffff1a] via-[#ffffff1a] to-transparent" style={{backgroundColor: '#0F172A !important'}}>
+        <h1 className="text-4xl font-bold text-center mb-10 !text-white" style={{color: 'white !important'}}>
           Sign Up
         </h1>
 
         <Form name="register" onFinish={onFinish} layout="vertical">
           <Form.Item
-            label={<span className="text-white text-base">Full Name</span>}
+            label={<span className="!text-white text-base" style={{color: 'white !important'}}>Full Name</span>}
             name="fullName"
             rules={[
               { required: true, message: "Please input your full name!" },
@@ -56,7 +61,7 @@ export default function Register() {
           </Form.Item>
 
           <Form.Item
-            label={<span className="text-white text-base">Email</span>}
+            label={<span className="!text-white text-base" style={{color: 'white !important'}}>Email</span>}
             name="email"
             rules={[
               { required: true, message: "Please input your email!" },
@@ -71,7 +76,23 @@ export default function Register() {
           </Form.Item>
 
           <Form.Item
-            label={<span className="text-white text-base">Password</span>}
+            label={<span className="!text-white text-base" style={{color: 'white !important'}}>Phone Number</span>}
+            name="phone"
+            rules={[
+              { required: true, message: "Please input your phone number!" },
+              { pattern: /^\d+$/, message: "Please enter numbers only!" },
+              { pattern: /^[0-9]{11}$/, message: "Please enter a valid 11-digit phone number!" }
+            ]}
+          >
+            <Input
+              className="!h-12"
+              prefix={<PhoneOutlined />}
+              placeholder="Enter your phone number"
+            />
+          </Form.Item>
+
+          <Form.Item
+            label={<span className="!text-white text-base" style={{color: 'white !important'}}>Password</span>}
             name="password"
             rules={[
               { required: true, message: "Please input your password!" },
@@ -87,7 +108,7 @@ export default function Register() {
 
           <Form.Item
             label={
-              <span className="text-white text-base">Confirm Password</span>
+              <span className="!text-white text-base" style={{color: 'white !important'}}>Confirm Password</span>
             }
             name="confirmPassword"
             dependencies={["password"]}
@@ -109,6 +130,38 @@ export default function Register() {
               placeholder="Confirm your password"
             />
           </Form.Item>
+
+          <Form.Item
+            label={<span className="!text-white text-base" style={{color: 'white !important'}}>Role</span>}
+            name="role"
+            initialValue="user"
+          >
+            <Select
+              className="!h-12 [&_.ant-select-selector]:!h-12 [&_.ant-select-selection-item]:!leading-[44px]"
+              onChange={(value) => setRole(value)}
+              options={[
+                { value: 'user', label: 'User' },
+                { value: 'admin', label: 'Admin' }
+              ]}
+            />
+          </Form.Item>
+
+          {role === 'admin' && (
+            <Form.Item
+              label={<span className="!text-white text-base" style={{color: 'white !important'}}>Admin Key</span>}
+              name="adminKey"
+              rules={[
+                { required: true, message: "Please input admin key!" },
+              ]}
+            >
+              <Input
+                className="!h-12"
+                prefix={<KeyOutlined />}
+                placeholder="Enter admin key"
+              />
+            </Form.Item>
+          )}
+
           <Button
             type="primary"
             htmlType="submit"
@@ -116,6 +169,8 @@ export default function Register() {
             className="!w-full !relative !overflow-hidden !font-neue_montreal !tracking-wider !px-4 !py-5 !rounded-full !text-white !border !border-gray-200 hover:!text-black !bg-transparent group"
             style={{
               height: "auto",
+              backgroundColor: 'transparent !important',
+              color: 'white !important'
             }}
           >
             <span className="!relative !z-10">
@@ -125,11 +180,12 @@ export default function Register() {
           </Button>
         </Form>
 
-        <div className="mt-8 text-center text-base text-white/60">
+        <div className="mt-8 text-center text-base !text-white/60" style={{color: 'rgba(255,255,255,0.6) !important'}}>
           Already have an account?{" "}
           <Link
             href="/login"
-            className="text-white hover:text-white/80 font-medium"
+            className="!text-white hover:!text-white/80 font-medium" 
+            style={{color: 'white !important'}}
           >
             Sign In
           </Link>

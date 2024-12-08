@@ -39,7 +39,7 @@ function Page() {
     {
       key: "1",
       label: (
-        <span className="!text-xl hover:!text-blue-500 [&.ant-tabs-tab-active]:!text-blue-500">
+        <span className="!text-xl hover:!text-blue-500 [&.ant-tabs-tab-active]:!text-blue-500" style={{fontSize: '1.25rem !important'}}>
           My Interview History
         </span>
       ),
@@ -48,12 +48,14 @@ function Page() {
           {myInterviews.map((interview) => (
             <Card
               key={interview.id}
-              title={<span className="text-slate-200">{interview.title}</span>}
-              className="overflow-hidden bg-slate-800 border border-slate-700 hover:border-blue-500 transition-all duration-300"
+              title={<span className="!text-slate-200" style={{color: 'rgb(226 232 240) !important'}}>{interview.title}</span>}
+              className="overflow-hidden !bg-slate-800 !border !border-slate-700 hover:!border-blue-500 transition-all duration-300"
+              style={{backgroundColor: 'rgb(30 41 59) !important'}}
               extra={
                 <Button
                   type="primary"
-                  className="bg-blue-500 hover:bg-blue-600"
+                  className="!bg-blue-500 hover:!bg-blue-600"
+                  style={{backgroundColor: 'rgb(59 130 246) !important'}}
                   icon={<EyeOutlined />}
                   onClick={() => {
                     router.push(`/my-interviews/${interview.id}`);
@@ -63,7 +65,7 @@ function Page() {
                 </Button>
               }
             >
-              <div className="text-slate-300">
+              <div className="!text-slate-300" style={{color: 'rgb(203 213 225) !important'}}>
                 <p>Date: {interview.date}</p>
                 <p>Score: {interview.score}</p>
                 <p>Duration: {interview.length}</p>
@@ -76,14 +78,15 @@ function Page() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-900">
-      <Navbar  background={'bg-[#0F172A] text-white'} />
+    <div className="min-h-screen !bg-slate-900" style={{backgroundColor: 'rgb(15 23 42) !important'}}>
+      <Navbar background={'!bg-[#0F172A] !text-white'} style={{backgroundColor: '#0F172A !important', color: 'white !important'}} />
       <div className="max-w-4xl mx-auto py-8 px-4">
         <Tabs
           activeKey={activeTab}
           onChange={setActiveTab}
           items={items}
-          className="text-white"
+          className="!text-white"
+          style={{color: 'white !important'}}
         />
       </div>
     </div>

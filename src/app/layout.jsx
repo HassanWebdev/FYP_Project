@@ -4,6 +4,8 @@ import { cn } from "@/lib/utils";
 import Transtionprovider from "@/components/Custom/TransitionProvider";
 import InitialLoadingScreen from "@/components/Custom/intialscreen";
 import SmoothScrolling from "@/components/Custom/SmoothScrolling";
+import { AntdRegistry } from '@ant-design/nextjs-registry';
+
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -24,7 +26,7 @@ export default function RootLayout({ children }) {
           <SmoothScrolling>
           <InitialLoadingScreen />
           <Transtionprovider>
-            {children}
+            <AntdRegistry>{children}</AntdRegistry>
             </Transtionprovider>
         </SmoothScrolling> 
       </body>

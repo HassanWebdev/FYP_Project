@@ -23,12 +23,11 @@ export default function Login() {
 
   const onFinish = async (values) => {
     try {
-
       // Validate form fields
       await form.validateFields();
       setLoading(true);
 
-      const response = await axios.post("/Auth/login", values);
+      const response = await axios.post(process.env.NEXT_PUBLIC_API_URL + "/Auth/login", values);
       const data = response.data;
 
       // Store token in localStorage
@@ -47,15 +46,15 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-[#0F172A] p-4">
-      <div className="w-full max-w-md bg-[#0F172A] !text-black rounded-xl p-8 shadow-[0_0_15px_rgba(0,0,0,0.2)] border border-gradient-to-r from-[#ffffff1a] via-[#ffffff1a] to-transparent">
-        <h1 className="text-4xl font-bold text-center mb-10 text-white">
+    <div className="min-h-screen w-full flex items-center justify-center !bg-[#0F172A] p-4">
+      <div className="w-full max-w-md !bg-[#0F172A] !text-black rounded-xl p-8 shadow-[0_0_15px_rgba(0,0,0,0.2)] !border !border-gradient-to-r !from-[#ffffff1a] !via-[#ffffff1a] !to-transparent">
+        <h1 className="text-4xl font-bold text-center mb-10 !text-white">
           Login
         </h1>
 
         <Form form={form} name="login" onFinish={onFinish} layout="vertical">
           <Form.Item
-            label={<span className="text-white text-base">Email</span>}
+            label={<span className="!text-white text-base">Email</span>}
             name="email"
             rules={[
               { required: true, message: "Please input your email!" },
@@ -63,20 +62,20 @@ export default function Login() {
             ]}
           >
             <Input
-              className="!h-12"
-              prefix={<UserOutlined />}
+              className="!h-12 !bg-white"
+              prefix={<UserOutlined className="!text-gray-400" />}
               placeholder="Enter your email"
             />
           </Form.Item>
 
           <Form.Item
-            label={<span className="text-white text-base">Password</span>}
+            label={<span className="!text-white text-base">Password</span>}
             name="password"
             rules={[{ required: true, message: "Please input your password!" }]}
           >
             <Input.Password
-              className="!h-12"
-              prefix={<LockOutlined />}
+              className="!h-12 !bg-white"
+              prefix={<LockOutlined className="!text-gray-400" />}
               placeholder="Enter your password"
             />
           </Form.Item>
@@ -88,6 +87,7 @@ export default function Login() {
             className="!w-full !relative !overflow-hidden !font-neue_montreal !tracking-wider !px-4 !py-5 !rounded-full !text-white !border !border-gray-200 hover:!text-black !bg-transparent group"
             style={{
               height: "auto",
+              backgroundColor: "transparent !important"
             }}
           >
             <span className="!relative !z-10">
@@ -97,11 +97,11 @@ export default function Login() {
           </Button>
         </Form>
 
-        <div className="mt-8 text-center text-base text-white/60">
+        <div className="mt-8 text-center text-base !text-white/60">
           Don&apos;t have an account?{" "}
           <Link
             href="/register"
-            className="text-white hover:text-white/80 font-medium"
+            className="!text-white hover:!text-white/80 !font-medium"
           >
             Create Account
           </Link>

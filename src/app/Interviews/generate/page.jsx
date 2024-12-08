@@ -5,6 +5,7 @@ import withauth from "../../../components/Custom/withauth";
 import axios from "axios";
 import axiosPost from "../../../lib/axioshttp";
 import { message } from "antd";
+import { Plus } from "lucide-react";
 
 const Generate = () => {
   const router = useRouter();
@@ -205,7 +206,7 @@ When given specific fields such as Case Type, Main Business, and Difficulty Leve
         );
         const title = titleMatch ? titleMatch[1].trim() : generatedCase;
 
-         const response =  await axiosPost.post("/InterviewCreation", {
+        const response = await axiosPost.post("/InterviewCreation", {
           title: title,
           scenario: generatedCase,
           feedback: "",
@@ -225,6 +226,7 @@ When given specific fields such as Case Type, Main Business, and Difficulty Leve
       setLoading(false);
     }
   };
+
 
   return (
     <div className="min-h-screen bg-slate-900">
@@ -267,14 +269,19 @@ When given specific fields such as Case Type, Main Business, and Difficulty Leve
 
             <button
               type="submit"
-              disabled={loading}
-              className={`w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 ${
-                loading
-                  ? "bg-blue-400 cursor-not-allowed"
-                  : "bg-blue-500 hover:bg-blue-600"
-              } text-white`}
+              className="relative inline-flex items-center justify-center gap-2 w-full py-3 text-white overflow-hidden rounded-xl group"
             >
-              {loading ? "Generating..." : "Generate Case"}
+              <span className="absolute inset-0 w-full h-full transition-all duration-500 ease-in-out bg-gradient-to-l from-blue-600 via-purple-600 to-indigo-600 group-hover:bg-gradient-to-r"></span>
+              <span className="absolute inset-0 w-full h-full transition-all duration-500 rounded-xl opacity-0 group-hover:opacity-50 blur-xl bg-gradient-to-l from-blue-400 via-purple-400 to-indigo-400"></span>
+              <span className="absolute inset-0 w-full h-full rounded-xl">
+                <span className="absolute inset-0 w-full h-full transition-all duration-500 rounded-xl border-2 border-white/30 group-hover:border-white/60"></span>
+                <span className="absolute inset-[-2px] rounded-xl bg-gradient-to-l from-blue-500 via-purple-500 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></span>
+                <span className="absolute inset-[1px] rounded-xl bg-slate-900 group-hover:bg-slate-800 transition-colors duration-500"></span>
+              </span>
+              <Plus className="relative w-5 h-5 transition-transform duration-300 group-hover:scale-110" />
+              <span className="relative font-semibold transition-all duration-300 group-hover:tracking-wider">
+                {loading ? "Generating..." : "Generate Case"}
+              </span>
             </button>
           </form>
         </div>

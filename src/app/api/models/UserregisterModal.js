@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    required: [true, 'Email is required'],
+    required: [true, 'Email is required'], 
     unique: true,
     trim: true,
     lowercase: true,
@@ -19,17 +19,30 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Password is required'],
     minlength: [6, 'Password must be at least 6 characters long']
   },
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user'
+  },
+  adminKey: {
+    type: String,
+    required: function() {
+      return this.role === 'admin';
+    },
+    select: false // Don't include in query results by default
+  },
   createdAt: {
     type: Date,
     default: Date.now
   },
-  interviews: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Interview'
-  }]
+  phone: {
+    type: String,
+    required: [true, 'Phone is required'],
+    trim: true
+  }
 });
 
-// Create model if it doesn't exist
+// Create model if it doesn't exist 
 const User = mongoose.models.User || mongoose.model('User', userSchema);
 
 export default User;

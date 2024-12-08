@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
-import connectToDB from "../../connectDB";
+import connectToDB from "../connectDB";
 import jwt from "jsonwebtoken";
-import Interview from "../../models/InterviewModal";
-import MockCase from "../../models/MockCasesAdd";
+import MockCase from "../models/MockCasesAdd";
 
-export async function POST(request) {
+export async function GET(request) {
   try {
     // Get token from authorization header
     const authHeader = request.headers.get("authorization");
@@ -24,27 +23,18 @@ export async function POST(request) {
     // Connect to database
     await connectToDB();
 
-    // Get interview ID and role from request body
-    const { interviewId, role } = await request.json();
+    // Find all mock cases
+    const mockCases = await MockCase.find({}).sort({ createdAt: -1 });
 
-    // Choose model based on role
-    const Model = role === 'admin' ? MockCase : Interview;
-
-    // Find specific interview/mockcase
-    const interview = await Model.findOne({
-      _id: interviewId,
-      ...(role === 'user' && { userId: userId }) // Only include userId filter for regular users
-    });
-
-    if (!interview) {
+    if (!mockCases) {
       return NextResponse.json(
-        { error: "Interview not found" },
+        { error: "No mock cases found" },
         { status: 404 }
       );
     }
 
     return NextResponse.json(
-      { success: true, data: interview },
+      { success: true, data: mockCases },
       { status: 200 }
     );
   } catch (error) {
@@ -52,9 +42,9 @@ export async function POST(request) {
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 
-    console.error("Error fetching interview:", error);
+    console.error("Error fetching mock cases:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Failed to fetch mock cases" },
       { status: 500 }
     );
   }

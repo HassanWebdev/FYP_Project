@@ -11,8 +11,18 @@ const Navbar = ({ background }) => {
   const [show, setshow] = useState(false);
   const [mobile, setmobile] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const tl = useRef(gsap.timeline({ paused: true }));
   const pathname = usePathname();
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const user = JSON.parse(localStorage.getItem("user"));
+      if (user && user.role === "admin") {
+        setIsAdmin(true);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const getwidth = () => {
@@ -155,6 +165,17 @@ const Navbar = ({ background }) => {
                 </span>
               </Link>
 
+              {isAdmin && (
+                <Link
+                  className="w-64 text-center font-neue_montreal_Medium relative overflow-hidden group px-6 py-3 rounded-lg bg-slate-800 hover:bg-slate-700"
+                  href="/admin/created-interviews"
+                >
+                  <span className="relative z-10 text-slate-200 group-hover:text-white transition-colors duration-300">
+                    Created Interviews
+                  </span>
+                </Link>
+              )}
+
               <Link
                 className="w-64 text-center font-neue_montreal_Medium relative overflow-hidden group px-6 py-3 rounded-lg bg-slate-800 hover:bg-slate-700"
                 href="/Interviews/generate"
@@ -172,6 +193,7 @@ const Navbar = ({ background }) => {
             { name: "Dashboard", url: "/" },
             { name: "Interviews", url: "/Interviews" },
             { name: "My Interviews", url: "/My-Interviews" },
+            ...(isAdmin ? [{ name: "Created Interviews", url: "/admin/created-interviews" }] : []),
           ].map((item, indx) => (
             <NavLink key={indx} href={item.url}>
               {item.name}

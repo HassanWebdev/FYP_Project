@@ -6,15 +6,14 @@ import User from "../../models/UserregisterModal";
 
 export async function POST(req) {
   try {
-    const { name, email, password } = await req.json();
+    const { name, email, password, role, adminKey, phone } = await req.json();
     // Validate input
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !phone) {
       return NextResponse.json(
         { error: "Please provide all required fields" },
         { status: 400 }
       );
     }
-
     // Connect to database
     await connectDB();
 
@@ -31,12 +30,20 @@ export async function POST(req) {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create new user
-    const user = await User.create({
+    // Create new user with admin key if role is admin
+    const userData = {
       name,
       email,
       password: hashedPassword,
-    });
+      phone,
+      role: role || "user", // Use provided role or default to 'user'
+    };
+
+    if (role === "admin") {
+      userData.adminKey = adminKey;
+    }
+
+    const user = await User.create(userData);
 
     // Generate JWT token
     const token = jwt.sign({ userId: user._id }, "AABBCCDDEEFFGGHH", {
@@ -51,6 +58,8 @@ export async function POST(req) {
           id: user._id,
           name: user.name,
           email: user.email,
+          phone: user.phone,
+          role: user.role,
         },
       },
       { status: 201 }
