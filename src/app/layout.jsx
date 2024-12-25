@@ -24,7 +24,7 @@ export default function RootLayout({ children }) {
         )}
       >
           <SmoothScrolling>
-          <InitialLoadingScreen />
+          {/* <InitialLoadingScreen /> */}
           <Transtionprovider>
             <AntdRegistry>{children}</AntdRegistry>
             </Transtionprovider>

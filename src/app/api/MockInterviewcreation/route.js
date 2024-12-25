@@ -22,7 +22,8 @@ export async function POST(req) {
 
     await connectDB();
 
-    const { type, title, scenario, result, exhibit_title, exhibit } = await req.json();
+    const { type, title, scenario, result, exhibit_title, exhibit } =
+      await req.json();
 
     // Convert single result object to array if needed
     const resultArray = Array.isArray(result) ? result : [result];
@@ -41,9 +42,9 @@ export async function POST(req) {
       (!Array.isArray(resultArray) ||
         !resultArray.every(
           (item) =>
-            item.feedback &&
+            item.Success &&
             ["Excellent", "Good", "Satisfactory", "Average", "Bad"].includes(
-              item.feedback
+              item.Success
             ) &&
             item.user
         ))
@@ -58,27 +59,67 @@ export async function POST(req) {
     }
 
     // Find existing mock case and update by adding new results
-    const existingMockCase = await MockCase.findOne({ title: title });
+    const existingMockCases = await MockCase.find({ title: title });
 
-    if (existingMockCase) {
+    if (existingMockCases && existingMockCases.length > 0) {
+      // Use the first matching case
+      const existingMockCase = existingMockCases[0];
+      console.log(existingMockCase);
+
       // Add new results to existing results array
       if (resultArray && resultArray.length > 0) {
-        existingMockCase.results.push(...resultArray);
-        existingMockCase.updatedAt = new Date();
-        // Update exhibit data if provided
-        if (exhibit_title) existingMockCase.exhibit_title = exhibit_title;
-        if (exhibit) existingMockCase.exhibit = exhibit;
-        await existingMockCase.save();
+        try {
+          // Find the index of the matching result
+          const matchingIndex = existingMockCase.results.findIndex(
+            (result) => result.user && result.user.toString() === resultArray[0].user
+          );
+      
+          // If a matching result is found, replace it
+          if (matchingIndex !== -1) {
+            existingMockCase.results[matchingIndex] = resultArray[0];
+          } else {
+            // If no match found, push the new result
+            existingMockCase.results.push(...resultArray);
+            existingMockCase.updatedAt = new Date();
+          
+            // Update exhibit data if provided
+            if (exhibit_title) existingMockCase.exhibit_title = exhibit_title;
+            if (exhibit) existingMockCase.exhibit = exhibit;
+        
+            await existingMockCase.save();
+            return NextResponse.json(
+              {
+                message: "Results added to existing mock case successfully",
+                mockCase_id: existingMockCase._id,
+                allCases: existingMockCases, // Return all matching cases
+              },
+              { status: 201 }
+            );
+          }
+      
+          // Update other fields
+          existingMockCase.updatedAt = new Date();
+          
+          // Update exhibit data if provided
+          if (exhibit_title) existingMockCase.exhibit_title = exhibit_title;
+          if (exhibit) existingMockCase.exhibit = exhibit;
+      
+          await existingMockCase.save();
+      
+          return NextResponse.json(
+            {
+              message: "Results updated in existing mock case successfully",
+              mockCase_id: existingMockCase._id,
+              allCases: existingMockCases, // Return all matching cases
+            },
+            { status: 201 }
+          );
+        } catch (error) {
+          return NextResponse.json({ error: error.message }, { status: 400 });
+        }
       }
-
-      return NextResponse.json(
-        {
-          message: "Results added to existing mock case successfully",
-          mockCase_id: existingMockCase._id,
-        },
-        { status: 200 }
-      );
     }
+    console.log(resultArray);
 
     // If no existing case, create new mock case
     const mockCase = new MockCase({

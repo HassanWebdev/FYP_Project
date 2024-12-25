@@ -21,14 +21,42 @@ const mockCaseSchema = new mongoose.Schema({
   },
   results: [
     {
-      feedback: {
+      Success: {
         type: String,
         enum: ["Excellent", "Good", "Satisfactory", "Average", "Bad"],
-        default: "Satisfactory",
+        default: "Bad",
       },
       user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
+      },
+      AI_Recommendation: {
+        type: String,
+        default: "",
+      },
+      AI_Suggestion: {
+        type: String,
+        default: "",
+      },
+      Technical: {
+        type: Number,
+        default: 0,
+      },
+      Communication: {
+        type: Number,
+        default: 0,
+      },
+      ProblemSolving: {
+        type: Number,
+        default: 0,
+      },
+      SoftSkills: {
+        type: Number,
+        default: 0,
+      },
+      Leadership: {
+        type: Number,
+        default: 0,
       },
     },
   ],

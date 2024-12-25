@@ -1,16 +1,16 @@
 "use client";
-import { useState } from 'react';
-import { Form, Input, Button, Card, message, Typography } from 'antd';
-import dynamic from 'next/dynamic';
-import { useRouter } from 'next/navigation';
-import axios from '../../lib/axioshttp';
-import EditableTable from '../../components/Custom/EditableTable';
-import Navbar from '../../components/Custom/Navbar';
+import { useState } from "react";
+import { Form, Input, Button, Card, message, Typography } from "antd";
+import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
+import axios from "../../lib/axioshttp";
+import EditableTable from "../../components/Custom/EditableTable";
+import Navbar from "../../components/Custom/Navbar";
 
 const { Title } = Typography;
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
-import 'react-quill/dist/quill.snow.css';
-import withAuth from '@/components/Custom/withauth';
+const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
+import "react-quill/dist/quill.snow.css";
+import withAuth from "@/components/Custom/withauth";
 
 const CreateInterview = () => {
   const [form] = Form.useForm();
@@ -48,77 +48,84 @@ const CreateInterview = () => {
 
   const modules = {
     toolbar: [
-      [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-      ['bold', 'italic', 'underline', 'strike'],
-      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-      [{ 'color': [] }, { 'background': [] }],
-      [{ 'align': [] }],
-      ['clean']
+      [{ header: [1, 2, 3, 4, 5, 6, false] }],
+      ["bold", "italic", "underline", "strike"],
+      [{ list: "ordered" }, { list: "bullet" }],
+      [{ color: [] }, { background: [] }],
+      [{ align: [] }],
+      ["clean"],
     ],
   };
 
   const formats = [
-    'header',
-    'bold', 'italic', 'underline', 'strike',
-    'list', 'bullet',
-    'color', 'background',
-    'align'
+    "header",
+    "bold",
+    "italic",
+    "underline",
+    "strike",
+    "list",
+    "bullet",
+    "color",
+    "background",
+    "align",
   ];
 
   const handleAddExhibit = () => {
     setShowExhibit(true);
     setAddHeader(true);
-    form.validateFields(['exhibit_title']).catch(() => {
-      message.error('Please enter exhibit title before adding data');
+    form.validateFields(["exhibit_title"]).catch(() => {
+      message.error("Please enter exhibit title before adding data");
     });
   };
 
   const onFinish = async (values) => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
 
       if (!token) {
-        message.error('Please login first');
-        router.push('/login');
+        message.error("Please login first");
+        router.push("/login");
         return;
       }
 
       if (showExhibit && !values.exhibit_title) {
-        message.error('Please enter exhibit title');
+        message.error("Please enter exhibit title");
         return;
       }
 
-      const updatedTableData = tableData.map(({ colKey, key, ...rest }) => rest);
+      const updatedTableData = tableData.map(
+        ({ colKey, key, ...rest }) => rest
+      );
       console.log(updatedTableData);
       console.log(values.exhibit_title);
 
-      const response = await axios.post('/MockInterviewcreation',
-        {
-          title: values.title,
-          scenario: values.scenario,
-          type: 'Mock',
-          result: [],
-          exhibit: updatedTableData,
-          exhibit_title: values.exhibit_title || ''
-        },
-      );
+      const response = await axios.post("/MockInterviewcreation", {
+        title: values.title,
+        scenario: values.scenario,
+        type: "Mock",
+        result:[],
+        exhibit: updatedTableData,
+        exhibit_title: values.exhibit_title || "",
+      });
       console.log(response);
       if (response.status === 201) {
         message.success({
-          content: 'Interview created successfully!',
-          className: 'custom-message-success',
+          content: "Interview created successfully!",
+          className: "custom-message-success",
         });
         form.resetFields();
         setShowExhibit(false);
         setAddHeader(false);
-        router.push('/Interviews/ViewCustom/' + response?.data?.mockCase_id + '/admin');
+        router.push(
+          "/Interviews/ViewCustom/" + response?.data?.mockCase_id + "/admin"
+        );
       }
     } catch (error) {
       console.log(error);
       message.error({
-        content: error.response?.data?.error || 'Failed to create interview',
-        className: 'custom-message-error',
+        content: error.response?.data?.error || "Failed to create interview",
+        className: "custom-message-error",
       });
     } finally {
       setLoading(false);
@@ -127,7 +134,7 @@ const CreateInterview = () => {
 
   return (
     <>
-      <Navbar background={'!bg-[#0F172A] !text-white'} />
+      <Navbar background={"!bg-[#0F172A] !text-white"} />
       <div className="min-h-screen !bg-[#0F172A] !p-8">
         <div className="max-w-4xl mx-auto">
           <Title level={2} className="text-center mb-8 !text-white">
@@ -136,7 +143,7 @@ const CreateInterview = () => {
 
           <Card
             className="!bg-slate-800 !border-slate-700 relative group overflow-hidden"
-            bodyStyle={{ padding: '2rem' }}
+            bodyStyle={{ padding: "2rem" }}
           >
             <div className="absolute inset-0 !bg-gradient-to-r !from-blue-500 !to-purple-500 !opacity-0 group-hover:!opacity-100 transition-opacity duration-300"></div>
             <div className="absolute inset-[2px] !bg-slate-800 rounded-lg z-10"></div>
@@ -147,16 +154,20 @@ const CreateInterview = () => {
                 onFinish={onFinish}
                 className="space-y-6"
                 initialValues={{
-                  scenario: defaultScenario
+                  scenario: defaultScenario,
                 }}
               >
                 <Form.Item
-                  label={<span className="text-lg font-semibold !text-white">Title</span>}
+                  label={
+                    <span className="text-lg font-semibold !text-white">
+                      Title
+                    </span>
+                  }
                   name="title"
                   rules={[
                     {
                       required: true,
-                      message: 'Please input the interview title!',
+                      message: "Please input the interview title!",
                     },
                   ]}
                 >
@@ -164,18 +175,22 @@ const CreateInterview = () => {
                     placeholder="Enter interview title"
                     className="rounded-md h-10 text-base !bg-slate-700 !border-slate-600 !text-white placeholder:!text-slate-400"
                     style={{
-                      transition: 'all 0.3s',
+                      transition: "all 0.3s",
                     }}
                   />
                 </Form.Item>
 
                 <Form.Item
-                  label={<span className="text-lg font-semibold !text-white">Scenario</span>}
+                  label={
+                    <span className="text-lg font-semibold !text-white">
+                      Scenario
+                    </span>
+                  }
                   name="scenario"
                   rules={[
                     {
                       required: true,
-                      message: 'Please input the interview scenario!',
+                      message: "Please input the interview scenario!",
                     },
                   ]}
                 >
@@ -184,7 +199,7 @@ const CreateInterview = () => {
                     modules={modules}
                     formats={formats}
                     className="!bg-slate-700 rounded-md !text-white"
-                    style={{ height: '400px' }}
+                    style={{ height: "400px" }}
                   />
                 </Form.Item>
 
@@ -200,12 +215,16 @@ const CreateInterview = () => {
                 {showExhibit && (
                   <>
                     <Form.Item
-                      label={<span className="text-lg font-semibold !text-white !mt-8">Title of Exhibit</span>}
+                      label={
+                        <span className="text-lg font-semibold !text-white !mt-8">
+                          Title of Exhibit
+                        </span>
+                      }
                       name="exhibit_title"
                       rules={[
                         {
                           required: true,
-                          message: 'Please enter exhibit title!',
+                          message: "Please enter exhibit title!",
                         },
                       ]}
                     >
@@ -216,7 +235,11 @@ const CreateInterview = () => {
                     </Form.Item>
 
                     <Form.Item
-                      label={<span className="text-lg font-semibold !text-white">Exhibit Data</span>}
+                      label={
+                        <span className="text-lg font-semibold !text-white">
+                          Exhibit Data
+                        </span>
+                      }
                       name="exhibit"
                     >
                       <EditableTable
@@ -245,136 +268,137 @@ const CreateInterview = () => {
         </div>
 
         <style jsx global>{`
-        .custom-message-success {
-          background-color: rgba(16, 185, 129, 0.1) !important;
-          border: 1px solid rgba(16, 185, 129, 0.2) !important;
-          border-radius: 4px !important;
-          color: #10B981 !important;
-        }
-        
-        .custom-message-error {
-          background-color: rgba(239, 68, 68, 0.1) !important;
-          border: 1px solid rgba(239, 68, 68, 0.2) !important;
-          border-radius: 4px !important;
-          color: #EF4444 !important;
-        }
-        
-        .ant-form-item-label > label {
-          font-weight: 600 !important;
-          color: #94A3B8 !important;
-        }
-        
-        .ant-input {
-          background: #1e293b !important;
-          border-color: #475569 !important;
-          color: white !important;
-        }
-        
-        .ant-input:hover, .ant-input:focus {
-          border-color: #3B82F6 !important;
-          box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
-        }
-        
-        .ant-btn-primary:hover {
-          transform: translateY(-1px) !important;
-        }
+          .custom-message-success {
+            background-color: rgba(16, 185, 129, 0.1) !important;
+            border: 1px solid rgba(16, 185, 129, 0.2) !important;
+            border-radius: 4px !important;
+            color: #10b981 !important;
+          }
 
-        .ql-toolbar {
-          background-color: #1e293b !important;
-          border-color: #475569 !important;
-        }
+          .custom-message-error {
+            background-color: rgba(239, 68, 68, 0.1) !important;
+            border: 1px solid rgba(239, 68, 68, 0.2) !important;
+            border-radius: 4px !important;
+            color: #ef4444 !important;
+          }
 
-        .ql-container {
-          background-color: #1e293b !important;
-          border-color: #475569 !important;
-          color: white !important;
-          font-size: 16px !important;
-        }
+          .ant-form-item-label > label {
+            font-weight: 600 !important;
+            color: #94a3b8 !important;
+          }
 
-        .ql-editor {
-          min-height: 300px !important;
-        }
+          .ant-input {
+            background: #1e293b !important;
+            border-color: #475569 !important;
+            color: white !important;
+          }
 
-        .ql-snow .ql-stroke {
-          stroke: #94A3B8 !important;
-        }
+          .ant-input:hover,
+          .ant-input:focus {
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+          }
 
-        .ql-snow .ql-fill {
-          fill: #94A3B8 !important;
-        }
+          .ant-btn-primary:hover {
+            transform: translateY(-1px) !important;
+          }
 
-        .ql-picker {
-          color: #94A3B8 !important;
-        }
+          .ql-toolbar {
+            background-color: #1e293b !important;
+            border-color: #475569 !important;
+          }
 
-        .ql-picker-options {
-          background-color: #1e293b !important;
-          border-color: #475569 !important;
-        }
+          .ql-container {
+            background-color: #1e293b !important;
+            border-color: #475569 !important;
+            color: white !important;
+            font-size: 16px !important;
+          }
 
-        /* Exhibit Table Styling */
-        .ant-table {
-          background: #1e293b !important;
-          color: white !important;
-        }
+          .ql-editor {
+            min-height: 300px !important;
+          }
 
-        .ant-table-thead > tr > th {
-          background: #334155 !important;
-          color: white !important;
-          border-bottom: 1px solid #475569 !important;
-        }
+          .ql-snow .ql-stroke {
+            stroke: #94a3b8 !important;
+          }
 
-        .ant-table-tbody > tr > td {
-          border-bottom: 1px solid #475569 !important;
-          color: white !important;
-        }
+          .ql-snow .ql-fill {
+            fill: #94a3b8 !important;
+          }
 
-        .ant-table-tbody > tr:hover > td {
-          background: #334155 !important;
-        }
+          .ql-picker {
+            color: #94a3b8 !important;
+          }
 
-        .ant-table-cell-row-hover {
-          background: #334155 !important;
-        }
+          .ql-picker-options {
+            background-color: #1e293b !important;
+            border-color: #475569 !important;
+          }
 
-        /* Exhibit Add Button Styling */
-        .ant-btn-default {
-          background: #334155 !important;
-          border-color: #475569 !important;
-          color: white !important;
-        }
+          /* Exhibit Table Styling */
+          .ant-table {
+            background: #1e293b !important;
+            color: white !important;
+          }
 
-        .ant-btn-default:hover {
-          background: #475569 !important;
-          border-color: #3B82F6 !important;
-          color: white !important;
-        }
+          .ant-table-thead > tr > th {
+            background: #334155 !important;
+            color: white !important;
+            border-bottom: 1px solid #475569 !important;
+          }
 
-        .ant-modal-content,
-        .ant-modal-header {
-          background: #1e293b !important;
-          color: white !important;
-        }
+          .ant-table-tbody > tr > td {
+            border-bottom: 1px solid #475569 !important;
+            color: white !important;
+          }
 
-        .ant-modal-title {
-          color: white !important;
-        }
+          .ant-table-tbody > tr:hover > td {
+            background: #334155 !important;
+          }
 
-        .ant-modal-close {
-          color: #94A3B8 !important;
-        }
+          .ant-table-cell-row-hover {
+            background: #334155 !important;
+          }
 
-        .ant-modal-footer .ant-btn {
-          background: #334155 !important;
-          border-color: #475569 !important;
-          color: white !important;
-        }
+          /* Exhibit Add Button Styling */
+          .ant-btn-default {
+            background: #334155 !important;
+            border-color: #475569 !important;
+            color: white !important;
+          }
 
-        .ant-modal-footer .ant-btn-primary {
-          background: linear-gradient(to right, #3B82F6, #2563EB) !important;
-          border: none !important;
-        }
-      `}</style>
+          .ant-btn-default:hover {
+            background: #475569 !important;
+            border-color: #3b82f6 !important;
+            color: white !important;
+          }
+
+          .ant-modal-content,
+          .ant-modal-header {
+            background: #1e293b !important;
+            color: white !important;
+          }
+
+          .ant-modal-title {
+            color: white !important;
+          }
+
+          .ant-modal-close {
+            color: #94a3b8 !important;
+          }
+
+          .ant-modal-footer .ant-btn {
+            background: #334155 !important;
+            border-color: #475569 !important;
+            color: white !important;
+          }
+
+          .ant-modal-footer .ant-btn-primary {
+            background: linear-gradient(to right, #3b82f6, #2563eb) !important;
+            border: none !important;
+          }
+        `}</style>
       </div>
     </>
   );
