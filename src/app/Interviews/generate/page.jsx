@@ -6,6 +6,7 @@ import axios from "axios";
 import axiosPost from "../../../lib/axioshttp";
 import { message } from "antd";
 import { Plus } from "lucide-react";
+import { motion } from "framer-motion";
 
 const Generate = () => {
   const router = useRouter();
@@ -15,6 +16,57 @@ const Generate = () => {
     case_type: "",
     difficulty_level: "",
   });
+
+  // Animation variants for loading spinner
+  const spinnerVariants = {
+    animate: {
+      rotate: 360,
+      transition: {
+        duration: 1,
+        repeat: Infinity,
+        ease: "linear",
+      },
+    },
+  };
+
+  // Animation variants for pulse effect
+  const pulseVariants = {
+    animate: {
+      scale: [1, 1.1, 1],
+      opacity: [0.7, 1, 0.7],
+      transition: {
+        duration: 2,
+        repeat: Infinity,
+        ease: "easeInOut",
+      },
+    },
+  };
+
+  // Animation variants for floating elements
+  const floatVariants = {
+    animate: {
+      y: [0, -10, 0],
+      transition: {
+        duration: 3,
+        repeat: Infinity,
+        ease: "easeInOut",
+      },
+    },
+  };
+
+  // Animation variants for form elements
+  const formItemVariants = {
+    hidden: { opacity: 0, x: -20 },
+    visible: (i) => ({
+      opacity: 1,
+      x: 0,
+      transition: {
+        delay: i * 0.1,
+        duration: 0.5,
+      },
+    }),
+  };
+
   const fields = [
     {
       key: "main_business",
@@ -115,7 +167,6 @@ const Generate = () => {
         },
       ],
     },
-
     {
       key: "difficulty_level",
       label: "Difficulty Level",
@@ -152,25 +203,71 @@ const Generate = () => {
     e.preventDefault();
     setLoading(true);
 
-    const systemPrompt = `**Custom Instruction for Generating Detailed Case Prompts**
-When given specific fields such as Case Type, Main Business, and Difficulty Level, create a structured case prompt with the following essential sections:
-### **Interview Overview**
-**Interview Title:** [Create a compelling title related to the Main Business]
-**Difficulty Level:** [Insert Difficulty Level]
-**Interview Prompt:**  
-[Write a detailed scenario that sets the stage for the case study. Mention the company, its main business challenge, and competitive context if needed.]
-**Industry:** [Specify the related industry]
-**Interview Type:** [Insert Case Type]
-### **Exhibits**
-*Exhibit 1: [Provide a brief description, e.g., Market Analysis, Financials]*
-| Metric | Value | Notes |
-| --- | --- | --- |
-| [Key metric] | [Value] | [Additional information] |
+    const systemPrompt = `Generate a comprehensive business case interview scenario following this structure:
 
-*Exhibit 2: [Example: Competitor Analysis]*
-| Competitor | Market Share | Product/Service |
-| --- | --- | --- |
-| [Company Name] | [Percentage] | [Details] |`;
+🎯 CASE OVERVIEW
+================
+Title: [Generate an engaging title reflecting the core business challenge]
+Complexity: [Difficulty Level] 
+Duration: 45 minutes
+Industry Focus: [Main Business sector]
+Case Category: [Case Type]
+
+📝 BUSINESS CONTEXT
+==================
+[Provide a detailed 3-4 paragraph scenario including:
+- Company background & market position
+- Current business challenge
+- Key stakeholders
+- Competitive landscape
+- Specific objectives or targets]
+
+📊 KEY DATA POINTS
+=================
+Market Overview:
+---------------
+• Total Addressable Market: [Generate a realistic market size]
+• Market Growth Rate: [Generate a realistic growth rate]
+• Market Share Distribution: [Generate market shares for key players]
+
+Financial Metrics:
+----------------
+• Revenue: [Generate realistic revenue figures]
+• Operating Margin: [Generate realistic margin]
+• Cost Structure: [Generate realistic cost breakdown]
+
+📈 EXHIBITS
+===========
+Exhibit 1: Market Performance
+----------------------------
+[Generate 2-3 exhibits with realistic data. For each exhibit:
+- Use actual company names (e.g. Samsung, Apple, Nike etc.)
+- Include real-looking but randomized data
+- Ensure data points are consistent with each other
+- Add relevant metrics for the industry
+
+Exhibit 2: Competitive Analysis
+----------------------------
+Example exhibits could include:
+- Market share analysis
+- Financial performance trends
+- Customer segmentation
+- Cost breakdown
+- Regional distribution
+- Product portfolio performance
+- Operational metrics
+
+Format exhibits as markdown tables with clear headers and properly aligned columns.
+Make sure numbers follow logical patterns and show realistic year-over-year changes.]
+
+🎯 CANDIDATE OBJECTIVES
+=====================
+1. Analyze the current situation
+2. Identify key challenges
+3. Develop strategic recommendations
+4. Provide implementation timeline
+
+Note: Generate fresh, randomized data for each case while maintaining realism and consistency within the industry context.`;
 
     try {
       const response = await axios.post(
@@ -185,25 +282,25 @@ When given specific fields such as Case Type, Main Business, and Difficulty Leve
             {
               role: "user",
               content: `Generate a case study with the following details:
-                    Case Type: ${formData.case_type}
-                    Main Business: ${formData.main_business}
-                    Difficulty Level: ${formData.difficulty_level}`,
+Case Type: ${formData.case_type}
+Main Business: ${formData.main_business}
+Difficulty Level: ${formData.difficulty_level}`,
             },
           ],
           temperature: 0.7,
         },
         {
           headers: {
-            Authorization: `Bearer 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`,
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_OPENAI_API_KEY}`,
           },
         }
       );
+
       console.log("response", response);
       const generatedCase = response?.data?.choices[0]?.message?.content;
+
       if (generatedCase) {
-        const titleMatch = generatedCase.match(
-          /### \*\*Interview Overview\*\*\s*\n\*\*Interview Title:\*\* ([^\n]+)/
-        );
+        const titleMatch = generatedCase.match(/Title: ([^\n]+)/);
         const title = titleMatch ? titleMatch[1].trim() : generatedCase;
 
         const response = await axiosPost.post("/InterviewCreation", {
@@ -216,8 +313,9 @@ When given specific fields such as Case Type, Main Business, and Difficulty Leve
           interviewDate: null,
           duration: 0,
         });
+
         message.success("Interview Case generated successfully");
-        router.push(`/Interviews/view/${response?.data?.interview_id}`)
+        router.push(`/Interviews/view/${response?.data?.interview_id}`);
       }
     } catch (error) {
       console.error("Error generating case:", error);
@@ -227,18 +325,85 @@ When given specific fields such as Case Type, Main Business, and Difficulty Leve
     }
   };
 
-
   return (
     <div className="min-h-screen bg-slate-900">
       <div className="max-w-4xl mx-auto py-8 px-4">
         <div className="bg-slate-800 rounded-lg p-8 border border-slate-700">
-          <h1 className="text-2xl font-bold text-center text-slate-200 mb-8">
+          <motion.h1
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-2xl font-bold text-center text-slate-200 mb-8"
+          >
             Generate New Interview Case
-          </h1>
+          </motion.h1>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {fields.map((field) => (
-              <div key={field.key} className="flex flex-col gap-2">
+          {loading && (
+            <motion.div
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              <motion.div
+                className="bg-slate-800/90 p-12 rounded-2xl flex flex-col items-center"
+                variants={pulseVariants}
+                animate="animate"
+              >
+                <motion.div
+                  className="w-24 h-24 border-4 border-blue-500 border-t-transparent rounded-full mb-6"
+                  variants={spinnerVariants}
+                  animate="animate"
+                />
+
+                <motion.div
+                  variants={floatVariants}
+                  animate="animate"
+                  className="flex flex-col items-center"
+                >
+                  <div className="text-white text-xl font-medium mb-2">
+                    Crafting Your Case Study
+                  </div>
+                  <div className="text-slate-400 text-sm">
+                    Building a comprehensive scenario...
+                  </div>
+                </motion.div>
+
+                <motion.div className="mt-8 flex space-x-2">
+                  {[1, 2, 3, 4].map((i) => (
+                    <motion.div
+                      key={i}
+                      className="w-3 h-3 bg-blue-500 rounded-full"
+                      animate={{
+                        scale: [1, 1.5, 1],
+                        opacity: [0.5, 1, 0.5],
+                      }}
+                      transition={{
+                        duration: 1,
+                        repeat: Infinity,
+                        delay: i * 0.2,
+                      }}
+                    />
+                  ))}
+                </motion.div>
+              </motion.div>
+            </motion.div>
+          )}
+
+          <motion.form
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            onSubmit={handleSubmit}
+            className="space-y-6"
+          >
+            {fields.map((field, index) => (
+              <motion.div
+                custom={index}
+                variants={formItemVariants}
+                initial="hidden"
+                animate="visible"
+                key={field.key}
+                className="flex flex-col gap-2"
+              >
                 <label
                   htmlFor={field.key}
                   className="text-slate-300 font-medium"
@@ -250,7 +415,7 @@ When given specific fields such as Case Type, Main Business, and Difficulty Leve
                   name={field.key}
                   value={formData[field.key]}
                   onChange={handleChange}
-                  className="w-full p-2.5 rounded-lg bg-slate-700 text-white border border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-200"
+                  className="w-full !p-2.5 rounded-lg bg-slate-700 text-white border border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-200"
                   required
                 >
                   <option value="">Select {field.label}</option>
@@ -264,10 +429,12 @@ When given specific fields such as Case Type, Main Business, and Difficulty Leve
                     </option>
                   ))}
                 </select>
-              </div>
+              </motion.div>
             ))}
 
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               type="submit"
               className="relative inline-flex items-center justify-center gap-2 w-full py-3 text-white overflow-hidden rounded-xl group"
             >
@@ -282,8 +449,8 @@ When given specific fields such as Case Type, Main Business, and Difficulty Leve
               <span className="relative font-semibold transition-all duration-300 group-hover:tracking-wider">
                 {loading ? "Generating..." : "Generate Case"}
               </span>
-            </button>
-          </form>
+            </motion.button>
+          </motion.form>
         </div>
       </div>
     </div>

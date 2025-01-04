@@ -12,8 +12,12 @@ const TransitionProvider = ({ children }) => {
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   useEffect(() => {
-    // Skip transition for login and register pages
-    if (pathname === "/login" || pathname === "/register") {
+    // Skip transition for login, register, and nested routes
+    if (
+      pathname === "/login" || 
+      pathname === "/register" || 
+      pathname.split("/").filter(Boolean).length > 1
+    ) {
       return;
     }
 
@@ -80,7 +84,11 @@ const TransitionProvider = ({ children }) => {
   }, [pathname]);
 
   // Skip rendering transition elements for login and register pages
-  if (pathname === "/login" || pathname === "/register") {
+  if (
+    pathname === "/login" || 
+    pathname === "/register" || 
+    pathname.split("/").filter(Boolean).length > 1
+  ) {
     return <>{children}</>;
   }
 

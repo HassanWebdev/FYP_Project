@@ -21,7 +21,7 @@ function Hero() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const user = localStorage.getItem('user');
+      const user = localStorage.getItem("user");
       if (user) {
         try {
           const decoded = JSON.parse(user);
@@ -35,15 +35,22 @@ function Hero() {
       }
     }
   }, []);
+  useEffect(() => {
+    console.log(userRole);
+  }, [userRole]);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user')
-    router.push('/login');
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    router.push("/login");
   };
 
   const handleCreateInterview = () => {
-    router.push('/create-interview');
+    if (userRole === "admin") {
+      router.push("/create-interview");
+    } else {
+      router.push("/Interviews/generate");
+    }
   };
 
   useGSAP(() => {
@@ -62,7 +69,8 @@ function Hero() {
       x: -100,
       opacity: 0,
       duration: 1,
-      delay: 0.2
+      delay: 0.2,
+      stagger: 0.5,
     });
 
     // Time section animation
@@ -70,7 +78,8 @@ function Hero() {
       x: 100,
       opacity: 0,
       duration: 1,
-      delay: 0.4
+      delay: 0.4,
+      stagger: 0.5,
     });
 
     // Metrics animation
@@ -78,7 +87,7 @@ function Hero() {
       y: 100,
       opacity: 0,
       duration: 1,
-      delay: 0.6
+      delay: 0.6,
     });
 
     // Charts staggered animation
@@ -87,7 +96,7 @@ function Hero() {
       opacity: 0,
       duration: 1,
       stagger: 0.2,
-      delay: 0.8
+      delay: 0.8,
     });
   });
 
@@ -244,11 +253,16 @@ function Hero() {
 
         <div className="max-w-full">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-            <div ref={welcomeRef} className="space-y-2 relative group overflow-hidden rounded-xl p-5">
+            <div
+              ref={welcomeRef}
+              className="space-y-2 relative group overflow-hidden rounded-xl p-5"
+            >
               <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <div className="absolute inset-[2px] bg-slate-900 rounded-lg z-10"></div>
               <div className="relative z-20">
-                <h2 className="text-2xl text-slate-400">Great to see you again, Admin!</h2>
+                <h2 className="text-2xl text-slate-400">
+                  Great to see you again, Admin!
+                </h2>
                 <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-500 to-purple-500 text-transparent bg-clip-text">
                   {userName}
                 </h1>
@@ -279,6 +293,21 @@ function Hero() {
                   Create Interview
                 </span>
               </button>
+              <div
+                ref={timeRef}
+                className="bg-slate-800/50 p-6 rounded-2xl backdrop-blur-sm border border-slate-700 relative group overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute inset-[2px] bg-slate-800 rounded-2xl z-10"></div>
+                <div className="relative z-20 transform group-hover:-translate-y-1 transition-transform duration-300">
+                  <p className="text-sm text-slate-400 group-hover:text-white transition-colors duration-300">
+                    Current Time
+                  </p>
+                  <p className="text-2xl font-bold text-white">
+                    {new Date().toLocaleTimeString()}
+                  </p>
+                </div>
+              </div>
               <button
                 onClick={handleLogout}
                 className="bg-slate-800/50 p-4 rounded-2xl backdrop-blur-sm border border-slate-700 relative group overflow-hidden hover:bg-red-500/10 transition-colors duration-300"
@@ -294,28 +323,35 @@ function Hero() {
                 title: "Total Interviews Created",
                 value: "48",
                 change: "↑ 15% increase",
-                changeColor: "text-emerald-400"
+                changeColor: "text-emerald-400",
               },
               {
                 title: "Active Interviews",
                 value: "32",
                 change: "↑ 12% increase",
-                changeColor: "text-emerald-400"
+                changeColor: "text-emerald-400",
               },
               {
                 title: "Completion Rate",
                 value: "78%",
                 change: "↑ 5% increase",
-                changeColor: "text-emerald-400"
-              }
+                changeColor: "text-emerald-400",
+              },
             ].map((metric, index) => (
-              <Card key={index} className="bg-slate-800 border-slate-700 relative group overflow-hidden">
+              <Card
+                key={index}
+                className="bg-slate-800 border-slate-700 relative group overflow-hidden"
+              >
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <div className="absolute inset-[2px] bg-slate-800 rounded-lg z-10"></div>
                 <div className="relative z-20 p-6">
                   <h3 className="text-slate-400 text-sm">{metric.title}</h3>
-                  <p className="text-3xl font-bold text-white mt-2">{metric.value}</p>
-                  <p className={`${metric.changeColor} text-sm mt-2`}>{metric.change}</p>
+                  <p className="text-3xl font-bold text-white mt-2">
+                    {metric.value}
+                  </p>
+                  <p className={`${metric.changeColor} text-sm mt-2`}>
+                    {metric.change}
+                  </p>
                 </div>
               </Card>
             ))}
@@ -324,7 +360,9 @@ function Hero() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="bg-slate-800 border-slate-700">
               <CardHeader>
-                <CardTitle className="text-white">Interview Statistics</CardTitle>
+                <CardTitle className="text-white">
+                  Interview Statistics
+                </CardTitle>
               </CardHeader>
               <CardContent className="h-[400px]">
                 <Chart
@@ -338,7 +376,9 @@ function Hero() {
 
             <Card className="bg-slate-800 border-slate-700">
               <CardHeader>
-                <CardTitle className="text-white">Completion Analytics</CardTitle>
+                <CardTitle className="text-white">
+                  Completion Analytics
+                </CardTitle>
               </CardHeader>
               <CardContent className="h-[400px]">
                 <Chart
@@ -365,22 +405,57 @@ function Hero() {
 
       <div className="max-w-full">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-          <div ref={welcomeRef} className="space-y-2 relative group overflow-hidden rounded-xl p-5">
+          <div
+            ref={welcomeRef}
+            className="space-y-2 relative group overflow-hidden rounded-xl p-5"
+          >
             <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <div className="absolute inset-[2px] bg-slate-900 rounded-lg z-10"></div>
             <div className="relative z-20 transform group-hover:-translate-y-1 transition-transform duration-300">
-              <h2 className="text-2xl text-slate-400 group-hover:text-white transition-colors duration-300">Welcome back,</h2>
+              <h2 className="text-2xl text-slate-400 group-hover:text-white transition-colors duration-300">
+                Welcome back,
+              </h2>
               <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-500 to-purple-500 text-transparent bg-clip-text transform group-hover:scale-105 transition-transform duration-300">
                 {userName}
               </h1>
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <div ref={timeRef} className="bg-slate-800/50 p-6 rounded-2xl backdrop-blur-sm border border-slate-700 relative group overflow-hidden">
+            <div ref={welcomeRef} className="flex items-center gap-4">
+              <button
+                onClick={handleCreateInterview}
+                className="relative inline-flex items-center gap-2 px-6 py-3 text-white overflow-hidden rounded-xl group"
+              >
+                {/* Animated gradient background */}
+                <span className="absolute inset-0 w-full h-full transition-all duration-500 ease-in-out bg-gradient-to-l from-blue-600 via-purple-600 to-indigo-600 group-hover:bg-gradient-to-r"></span>
+
+                {/* Glowing effect */}
+                <span className="absolute inset-0 w-full h-full transition-all duration-500 rounded-xl opacity-0 group-hover:opacity-50 blur-xl bg-gradient-to-l from-blue-400 via-purple-400 to-indigo-400"></span>
+
+                {/* Animated border */}
+                <span className="absolute inset-0 w-full h-full rounded-xl">
+                  <span className="absolute inset-0 w-full h-full transition-all duration-500 rounded-xl border-2 border-white/30 group-hover:border-white/60"></span>
+                  <span className="absolute inset-[-2px] rounded-xl bg-gradient-to-l from-blue-500 via-purple-500 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></span>
+                  <span className="absolute inset-[1px] rounded-xl bg-slate-900 group-hover:bg-slate-800 transition-colors duration-500"></span>
+                </span>
+
+                {/* Content */}
+                <Plus className="relative w-5 h-5 transition-transform duration-300 group-hover:scale-110" />
+                <span className="relative font-semibold transition-all duration-300 group-hover:tracking-wider">
+                  Create Interview
+                </span>
+              </button>
+            </div>
+            <div
+              ref={timeRef}
+              className="bg-slate-800/50 p-6 rounded-2xl backdrop-blur-sm border border-slate-700 relative group overflow-hidden"
+            >
               <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <div className="absolute inset-[2px] bg-slate-800 rounded-2xl z-10"></div>
               <div className="relative z-20 transform group-hover:-translate-y-1 transition-transform duration-300">
-                <p className="text-sm text-slate-400 group-hover:text-white transition-colors duration-300">Current Time</p>
+                <p className="text-sm text-slate-400 group-hover:text-white transition-colors duration-300">
+                  Current Time
+                </p>
                 <p className="text-2xl font-bold text-white">
                   {new Date().toLocaleTimeString()}
                 </p>
@@ -394,7 +469,10 @@ function Hero() {
             </button>
           </div>
         </div>
-        <Card ref={metricsRef} className="col-span-full md:col-span-2 bg-slate-800 border-slate-700 mb-6 relative group overflow-hidden">
+        <Card
+          ref={metricsRef}
+          className="col-span-full md:col-span-2 bg-slate-800 border-slate-700 mb-6 relative group overflow-hidden"
+        >
           <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           <div className="absolute inset-[2px] bg-slate-800 rounded-lg z-10"></div>
           <div className="relative z-20">
@@ -408,34 +486,43 @@ function Hero() {
                     title: "Total Interviews",
                     value: "125",
                     change: "↑ 12% increase",
-                    changeColor: "text-emerald-400"
+                    changeColor: "text-emerald-400",
                   },
                   {
                     title: "Success Rate",
                     value: "84%",
                     change: "↑ 8% increase",
-                    changeColor: "text-emerald-400"
+                    changeColor: "text-emerald-400",
                   },
                   {
                     title: "Average Rating",
                     value: "4.2/5",
                     change: "↑ 0.3 points",
-                    changeColor: "text-emerald-400"
+                    changeColor: "text-emerald-400",
                   },
                   {
                     title: "Response Time",
                     value: "24min",
                     change: "↓ 2min slower",
-                    changeColor: "text-rose-400"
-                  }
+                    changeColor: "text-rose-400",
+                  },
                 ].map((metric, index) => (
-                  <div key={index} className="bg-slate-700/50 p-6 rounded-xl relative group/metric overflow-hidden">
+                  <div
+                    key={index}
+                    className="bg-slate-700/50 p-6 rounded-xl relative group/metric overflow-hidden"
+                  >
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 opacity-0 group-hover/metric:opacity-100 transition-opacity duration-300"></div>
                     <div className="absolute inset-[2px] bg-slate-700/50 rounded-xl z-10"></div>
                     <div className="relative z-20 transform group-hover/metric:-translate-y-1 transition-transform duration-300">
-                      <p className="text-sm text-slate-400 group-hover/metric:text-white transition-colors duration-300">{metric.title}</p>
-                      <p className="text-3xl font-bold text-white mt-2">{metric.value}</p>
-                      <p className={`${metric.changeColor} text-sm mt-2`}>{metric.change}</p>
+                      <p className="text-sm text-slate-400 group-hover/metric:text-white transition-colors duration-300">
+                        {metric.title}
+                      </p>
+                      <p className="text-3xl font-bold text-white mt-2">
+                        {metric.value}
+                      </p>
+                      <p className={`${metric.changeColor} text-sm mt-2`}>
+                        {metric.change}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -443,7 +530,10 @@ function Hero() {
             </CardContent>
           </div>
         </Card>
-        <div ref={chartsRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div
+          ref={chartsRef}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        >
           {[
             {
               title: "Interview Analytics",
@@ -455,7 +545,7 @@ function Hero() {
                   type="bar"
                   height="100%"
                 />
-              )
+              ),
             },
             {
               title: "Success Distribution",
@@ -467,7 +557,7 @@ function Hero() {
                   type="donut"
                   height="100%"
                 />
-              )
+              ),
             },
             {
               title: "Skill Analysis",
@@ -479,19 +569,22 @@ function Hero() {
                   type="polarArea"
                   height="100%"
                 />
-              )
-            }
+              ),
+            },
           ].map((item, index) => (
-            <Card key={index} className={`${item.span} bg-slate-800 border-slate-700 relative group overflow-hidden`}>
+            <Card
+              key={index}
+              className={`${item.span} bg-slate-800 border-slate-700 relative group overflow-hidden`}
+            >
               <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <div className="absolute inset-[2px] bg-slate-800 rounded-lg z-10"></div>
               <div className="relative z-20">
                 <CardHeader>
-                  <CardTitle className="text-white transform group-hover:-translate-y-1 transition-transform duration-300">{item.title}</CardTitle>
+                  <CardTitle className="text-white transform group-hover:-translate-y-1 transition-transform duration-300">
+                    {item.title}
+                  </CardTitle>
                 </CardHeader>
-                <CardContent className="h-[300px]">
-                  {item.chart}
-                </CardContent>
+                <CardContent className="h-[300px]">{item.chart}</CardContent>
               </div>
             </Card>
           ))}

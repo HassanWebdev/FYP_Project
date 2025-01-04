@@ -16,7 +16,7 @@ const interviewSchema = new mongoose.Schema({
     Success: {
       type: String,
       enum: ['Excellent', 'Good', 'Average', 'Satisfactory', 'Bad'],
-      default: ' '
+      default: 'Bad'
     },
     AI_Recommendation: {
       type: String,
