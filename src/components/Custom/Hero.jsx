@@ -14,10 +14,24 @@ function Hero() {
   const router = useRouter();
   const [userName, setUserName] = useState("");
   const [userRole, setUserRole] = useState("");
+  const [currentTime, setCurrentTime] = useState("");
   const welcomeRef = useRef(null);
   const timeRef = useRef(null);
   const metricsRef = useRef(null);
   const chartsRef = useRef(null);
+
+  useEffect(() => {
+    // Initialize time on mount
+    setCurrentTime(new Date().toLocaleTimeString());
+
+    // Update time every second
+    const timer = setInterval(() => {
+      setCurrentTime(new Date().toLocaleTimeString());
+    }, 1000);
+
+    // Cleanup interval on unmount
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -303,9 +317,7 @@ function Hero() {
                   <p className="text-sm text-slate-400 group-hover:text-white transition-colors duration-300">
                     Current Time
                   </p>
-                  <p className="text-2xl font-bold text-white">
-                    {new Date().toLocaleTimeString()}
-                  </p>
+                  <p className="text-2xl font-bold text-white">{currentTime}</p>
                 </div>
               </div>
               <button
@@ -456,9 +468,7 @@ function Hero() {
                 <p className="text-sm text-slate-400 group-hover:text-white transition-colors duration-300">
                   Current Time
                 </p>
-                <p className="text-2xl font-bold text-white">
-                  {new Date().toLocaleTimeString()}
-                </p>
+                <p className="text-2xl font-bold text-white">{currentTime}</p>
               </div>
             </div>
             <button

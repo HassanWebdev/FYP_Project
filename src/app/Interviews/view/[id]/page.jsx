@@ -113,7 +113,7 @@ function InterviewView({ params }) {
               {interview?.scenario || "No scenario available"}
             </Markdown>
           </div>
-          <Link href={`/AI_Master`} className="flex justify-center mt-8">
+          <Link href={`/MockMaster.AI`} className="flex justify-center mt-8">
             <button className="relative inline-flex items-center gap-2 px-8 py-4 text-lg text-white overflow-hidden rounded-xl group">
               {/* Animated gradient background */}
               <span className="absolute inset-0 w-full h-full transition-all duration-500 ease-in-out bg-gradient-to-l from-blue-600 via-purple-600 to-indigo-600 group-hover:bg-gradient-to-r"></span>
