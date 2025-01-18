@@ -1,6 +1,6 @@
 "use client";
 import "regenerator-runtime/runtime";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import Navbar from "@/components/Custom/Navbar";
 import { message } from "antd";
 import { Card } from "@/components/ui/card";
@@ -19,12 +19,15 @@ import {
 
 const MockMasterAI = () => {
   const [text, setText] = useState("");
-  const [threadId, setThreadId] = useState("");
-  const [assistantId, setAssistantId] = useState("");
-  const [runId, setRunId] = useState("");
-  const [messageId, setMessageId] = useState("");
+  const AIIds = useRef({
+    threadId: "",
+    assistantId: "",
+    runId: "",
+    messageId: "",
+  });
   const [speaking, setSpeaking] = useState("ai");
   const [isRecording, setIsRecording] = useState(false);
+  const [AIMessage, setAIMessage] = useState("");
 
   const {
     transcript,
@@ -52,6 +55,7 @@ const MockMasterAI = () => {
     let silenceTimer;
 
     if (transcript) {
+      setSpeaking("user");
       setIsRecording(true);
       if (silenceTimer) clearTimeout(silenceTimer);
 
@@ -69,44 +73,73 @@ const MockMasterAI = () => {
 
   const createassistant = async () => {
     const assistant = await CreateAssistant();
-    setAssistantId(assistant.assistant.id);
+    AIIds.current.assistantId = assistant.assistant.id;
     console.log(assistant);
   };
 
   const Createthread = async () => {
-    const thread = await CreateThread(assistantId);
-    setThreadId(thread.id);
+    const thread = await CreateThread(AIIds.current.assistantId);
+    AIIds.current.threadId = thread.id;
     console.log(thread);
   };
 
-  // useEffect(() => {
-  //   createassistant();
-  //   Createthread();
-  // }, []);
+  useEffect(() => {
+    createassistant();
+    Createthread();
+  }, []);
+
+  useEffect(() => {
+    console.log(AIIds.current);
+  }, [AIIds.current]);
 
   const Createmessage = async () => {
-    const message = await CreateMessage(threadId, text);
-    setMessageId(message.id);
-    console.log(message);
-  };
-
-  const run = async () => {
-    const run = await Run(threadId, assistantId);
-    setRunId(run.id);
-    console.log(run);
-  };
-
-  const checkStatus = async () => {
-    const status = await AIResponse(threadId, runId);
-    console.log(status);
+    console.log("text", text);
+    if (text.trim() === "") return;
+    try {
+      const message = await CreateMessage(AIIds.current.threadId, text);
+      AIIds.current.messageId = message.id;
+      console.log(message);
+      const run = await Run(AIIds.current.threadId, AIIds.current.assistantId);
+      AIIds.current.runId = run.id;
+      console.log(run);
+      while (text.trim() !== "") {
+        const response = await AIResponse(
+          AIIds.current.threadId,
+          AIIds.current.runId
+        );
+        console.log(response);
+        if (response?.status === "completed") {
+          setAIMessage(response?.message);
+          setText("");
+          console.log("AI Message", response?.message);
+          resetTranscript();
+          break;
+        }
+      }
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setSpeaking((prev) => (prev === "ai" ? "user" : "ai"));
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
+    Createmessage();
+  }, [text]);
+
+  useEffect(() => {
+    if (AIMessage?.trim() !== "") {
+      console.log("i am here");
+      const utterance = new SpeechSynthesisUtterance(AIMessage);
+      
+      const voices = window.speechSynthesis.getVoices();
+      const indianVoice = voices.find((voice) => voice.lang === "hi-IN");
+      if (indianVoice) {
+        utterance.voice = indianVoice;
+      }
+      utterance.rate = 1;
+      utterance.pitch = 1;
+      window.speechSynthesis.speak(utterance);
+    }
+  }, [AIMessage]);
 
   return (
     <div className="min-h-screen bg-[#0F172A] relative overflow-hidden">

@@ -101,7 +101,10 @@ export const Run = async (threadId, assistantId) => {
 
 export const AIResponse = async (threadId, runId) => {
   try {
+    console.log("threadId", threadId);
+    console.log("runId", runId);
     const status = await openai.beta.threads.runs.retrieve(threadId, runId);
+    console.log(status);
     if (status?.status === "completed") {
       const messages = await openai.beta.threads.messages.list(threadId);
       return {
