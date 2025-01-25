@@ -5,9 +5,10 @@ import MockCase from "../models/MockCasesAdd";
 
 export async function GET(request) {
   try {
+    console.log(request);
     // Get token from authorization header
     const authHeader = request.headers.get("authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    if (!authHeader || !authHeader.startsWith("Bearer")) {
       return NextResponse.json(
         { error: "Unauthorized - No token provided" },
         { status: 401 }
@@ -16,6 +17,7 @@ export async function GET(request) {
 
     const token = authHeader.split(" ")[1];
 
+    console.log('JWT Secret:', process.env.JWT_SECRET); // Remove this in production
     // Verify and decode token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.userId;

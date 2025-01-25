@@ -8,8 +8,10 @@ import remarkGfm from "remark-gfm";
 import withauth from "../../../../components/Custom/withauth";
 import { Play } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 function InterviewView({ params }) {
+  const pathname = usePathname();
   const [interview, setInterview] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -113,7 +115,10 @@ function InterviewView({ params }) {
               {interview?.scenario || "No scenario available"}
             </Markdown>
           </div>
-          <Link href={`/MockMaster.AI`} className="flex justify-center mt-8">
+          <Link
+            href={`${pathname}/MockMaster.AI`}
+            className="flex justify-center mt-8"
+          >
             <button className="relative inline-flex items-center gap-2 px-8 py-4 text-lg text-white overflow-hidden rounded-xl group">
               {/* Animated gradient background */}
               <span className="absolute inset-0 w-full h-full transition-all duration-500 ease-in-out bg-gradient-to-l from-blue-600 via-purple-600 to-indigo-600 group-hover:bg-gradient-to-r"></span>

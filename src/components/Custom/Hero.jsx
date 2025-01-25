@@ -49,9 +49,6 @@ function Hero() {
       }
     }
   }, []);
-  useEffect(() => {
-    console.log(userRole);
-  }, [userRole]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -76,41 +73,6 @@ function Hero() {
         duration: 0.4,
         ease: "none",
       });
-    });
-
-    // Welcome section animation
-    gsap.from(welcomeRef.current, {
-      x: -100,
-      opacity: 0,
-      duration: 1,
-      delay: 0.2,
-      stagger: 0.5,
-    });
-
-    // Time section animation
-    gsap.from(timeRef.current, {
-      x: 100,
-      opacity: 0,
-      duration: 1,
-      delay: 0.4,
-      stagger: 0.5,
-    });
-
-    // Metrics animation
-    gsap.from(metricsRef.current, {
-      y: 100,
-      opacity: 0,
-      duration: 1,
-      delay: 0.6,
-    });
-
-    // Charts staggered animation
-    gsap.from(chartsRef.current?.children, {
-      y: 50,
-      opacity: 0,
-      duration: 1,
-      stagger: 0.2,
-      delay: 0.8,
     });
   });
 
@@ -480,7 +442,6 @@ function Hero() {
           </div>
         </div>
         <Card
-          ref={metricsRef}
           className="col-span-full md:col-span-2 bg-slate-800 border-slate-700 mb-6 relative group overflow-hidden"
         >
           <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -541,7 +502,6 @@ function Hero() {
           </div>
         </Card>
         <div
-          ref={chartsRef}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           {[

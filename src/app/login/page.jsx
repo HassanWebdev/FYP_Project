@@ -27,7 +27,7 @@ export default function Login() {
       await form.validateFields();
       setLoading(true);
 
-      const response = await axios.post(process.env.NEXT_PUBLIC_API_URL + "/Auth/login", values);
+      const response = await axios.post("/Auth/login", values);
       const data = response.data;
 
       // Store token in localStorage
@@ -87,7 +87,7 @@ export default function Login() {
             className="!w-full !relative !overflow-hidden !font-neue_montreal !tracking-wider !px-4 !py-5 !rounded-full !text-white !border !border-gray-200 hover:!text-black !bg-transparent group"
             style={{
               height: "auto",
-              backgroundColor: "transparent !important"
+              backgroundColor: "transparent !important",
             }}
           >
             <span className="!relative !z-10">
