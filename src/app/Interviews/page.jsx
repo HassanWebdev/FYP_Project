@@ -9,7 +9,6 @@ import Link from "next/link";
 import withauth from "../../components/Custom/withauth";
 import axios from "../../lib/axioshttp";
 
-
 function Page() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("1");
@@ -19,7 +18,8 @@ function Page() {
   useEffect(() => {
     const fetchInterviews = async () => {
       try {
-        const endpoint = activeTab === "1" ? "/GetAdminInterviews" : "/GetInterviews";
+        const endpoint =
+          activeTab === "1" ? "/GetAdminInterviews" : "/GetInterviews";
         const res = await axios.get(endpoint);
         setInterviews(res?.data?.data);
       } catch (error) {
@@ -34,7 +34,7 @@ function Page() {
   }, [activeTab]);
 
   const LoadingSpinner = () => (
-    <div className="flex justify-center items-center p-10">
+    <div className="flex justify-center items-center w-full h-screen p-10">
       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
     </div>
   );
@@ -44,9 +44,7 @@ function Page() {
       {interviews.length === 0 ? (
         <div className="flex flex-col items-center justify-center p-10 bg-slate-800 rounded-xl border border-slate-700">
           <div className="text-slate-300 text-center mb-6">
-            <h3 className="text-2xl font-semibold mb-2">
-              No Interviews Found
-            </h3>
+            <h3 className="text-2xl font-semibold mb-2">No Interviews Found</h3>
             <p className="text-slate-400">
               You haven&apos;t created any interviews yet.
             </p>
@@ -70,7 +68,11 @@ function Page() {
                 className="!bg-blue-500 hover:!bg-blue-600"
                 icon={<EyeOutlined />}
                 onClick={() => {
-                  router.push(activeTab === "1" ? `/Interviews/ViewCustom/${m._id}/admin` : `/Interviews/view/${m._id}`);
+                  router.push(
+                    activeTab === "1"
+                      ? `/Interviews/ViewCustom/${m._id}/admin`
+                      : `/Interviews/view/${m._id}`
+                  );
                 }}
               >
                 View Interview
@@ -101,7 +103,11 @@ function Page() {
       onClick: () => {
         setActiveTab("1");
       },
-      children: loading ? <LoadingSpinner /> : <InterviewsList interviews={Interviews} />,
+      children: loading ? (
+        <LoadingSpinner />
+      ) : (
+        <InterviewsList interviews={Interviews} />
+      ),
     },
     {
       key: "2",
@@ -110,7 +116,11 @@ function Page() {
           AI Generated Interviews
         </span>
       ),
-      children: loading ? <LoadingSpinner /> : <InterviewsList interviews={Interviews} />,
+      children: loading ? (
+        <LoadingSpinner />
+      ) : (
+        <InterviewsList interviews={Interviews} />
+      ),
       onClick: () => {
         setActiveTab("2");
       },

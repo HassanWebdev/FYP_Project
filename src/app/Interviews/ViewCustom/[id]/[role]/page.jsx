@@ -32,7 +32,7 @@ function InterviewView({ params }) {
       }
     };
     fetchInterview();
-  }, [params.id, params.role]);
+  }, [params.id, params.role, params]);
 
   if (loading) {
     return (

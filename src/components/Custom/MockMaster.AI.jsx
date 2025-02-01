@@ -17,7 +17,7 @@ import {
   AIResponse,
 } from "@/lib/helperfunctions";
 
-const MockMasterAI = () => {
+const MockMasterAI = ({ params }) => {
   const [text, setText] = useState("");
   const AIIds = useRef({
     threadId: "",
@@ -82,16 +82,6 @@ const MockMasterAI = () => {
     AIIds.current.threadId = thread?.id;
     console.log(thread);
   };
-
-  useEffect(() => {
-    createassistant();
-    Createthread();
-  }, []);
-
-  useEffect(() => {
-    console.log(AIIds.current);
-  }, [AIIds.current]);
-
   const Createmessage = async () => {
     console.log("text", text);
     if (text.trim() === "") return;
@@ -120,6 +110,14 @@ const MockMasterAI = () => {
       console.error(error);
     }
   };
+  useEffect(() => {
+    createassistant();
+    Createthread();
+  }, [params]);
+
+  useEffect(() => {
+    console.log(AIIds.current);
+  }, [AIIds.current]);
 
   useEffect(() => {
     Createmessage();
@@ -129,7 +127,7 @@ const MockMasterAI = () => {
     if (AIMessage?.trim() !== "") {
       console.log("i am here");
       const utterance = new SpeechSynthesisUtterance(AIMessage);
-      
+
       const voices = window.speechSynthesis.getVoices();
       const indianVoice = voices.find((voice) => voice.lang === "hi-IN");
       if (indianVoice) {

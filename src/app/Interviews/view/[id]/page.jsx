@@ -30,7 +30,7 @@ function InterviewView({ params }) {
       }
     };
     fetchInterview();
-  }, [params.id]);
+  }, [params.id, params]);
 
   if (loading) {
     return (
