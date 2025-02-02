@@ -130,6 +130,7 @@ export const CreateThread = async () => {
 };
 
 export const CreateMessage = async (threadId, message) => {
+  console.log("message", message, threadId);
   try {
     return await openai.beta.threads.messages.create(threadId, {
       role: "user",
@@ -157,6 +158,7 @@ export const AIResponse = async (threadId, runId) => {
     console.log(status);
     if (status?.status === "completed") {
       const messages = await openai.beta.threads.messages.list(threadId);
+      console.log("messages", messages);
       return {
         status: status?.status,
         message: messages.data[0].content[0].text.value,

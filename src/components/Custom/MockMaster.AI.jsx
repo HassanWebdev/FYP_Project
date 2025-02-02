@@ -9,6 +9,7 @@ import { PhoneOff } from "lucide-react";
 import SpeechRecognition, {
   useSpeechRecognition,
 } from "react-speech-recognition";
+import axios from "@/lib/axioshttp";
 import {
   CreateAssistant,
   CreateThread,
@@ -18,16 +19,21 @@ import {
 } from "@/lib/helperfunctions";
 
 const MockMasterAI = ({ params }) => {
+  const user = JSON.parse(localStorage.getItem("user"));
   const [text, setText] = useState("");
+  const [speaking, setSpeaking] = useState(" ");
+  const [isRecording, setIsRecording] = useState(false);
+  const [AIMessage, setAIMessage] = useState("");
+  const [isAiSpeaking, setIsAiSpeaking] = useState(false);
+  const [CaseScenario, setCaseScenario] = useState({ scenario: "" });
+  const [isInitialized, setIsInitialized] = useState(false);
+
   const AIIds = useRef({
     threadId: "",
     assistantId: "",
-    runId: "",
+    runId: "", 
     messageId: "",
   });
-  const [speaking, setSpeaking] = useState("ai");
-  const [isRecording, setIsRecording] = useState(false);
-  const [AIMessage, setAIMessage] = useState("");
 
   const {
     transcript,
@@ -38,6 +44,7 @@ const MockMasterAI = ({ params }) => {
     continuous: true,
   });
 
+  // Handle browser speech recognition support
   useEffect(() => {
     if (!browserSupportsSpeechRecognition) {
       message.warning("Browser doesn't support speech recognition.");
@@ -45,18 +52,17 @@ const MockMasterAI = ({ params }) => {
     }
 
     SpeechRecognition.startListening({ continuous: true });
-
-    return () => {
-      SpeechRecognition.stopListening();
-    };
+    return () => SpeechRecognition.stopListening();
   }, []);
 
+  // Handle user speech detection
   useEffect(() => {
     let silenceTimer;
 
     if (transcript) {
       setSpeaking("user");
       setIsRecording(true);
+      
       if (silenceTimer) clearTimeout(silenceTimer);
 
       silenceTimer = setTimeout(() => {
@@ -71,37 +77,45 @@ const MockMasterAI = ({ params }) => {
     };
   }, [transcript]);
 
+  // Toggle speech recognition based on AI speaking state
+  useEffect(() => {
+    if (isAiSpeaking) {
+      SpeechRecognition.stopListening();
+      setSpeaking("ai");
+    } else {
+      SpeechRecognition.startListening({ continuous: true });
+      setSpeaking("user");
+    }
+  }, [isAiSpeaking]);
+
   const createassistant = async () => {
     const assistant = await CreateAssistant();
     AIIds.current.assistantId = assistant?.assistant?.id;
-    console.log(assistant);
   };
 
   const Createthread = async () => {
     const thread = await CreateThread(AIIds.current.assistantId);
     AIIds.current.threadId = thread?.id;
-    console.log(thread);
   };
-  const Createmessage = async () => {
-    console.log("text", text);
-    if (text.trim() === "") return;
+
+  const Createmessage = useCallback(async (messageText) => {
+    if (!messageText?.trim()) return;
     try {
-      const message = await CreateMessage(AIIds.current.threadId, text);
+      const message = await CreateMessage(AIIds.current.threadId, messageText);
       AIIds.current.messageId = message.id;
-      console.log(message);
+
       const run = await Run(AIIds.current.threadId, AIIds.current.assistantId);
       AIIds.current.runId = run.id;
-      console.log(run);
-      while (text.trim() !== "") {
+
+      while (true) {
         const response = await AIResponse(
           AIIds.current.threadId,
           AIIds.current.runId
         );
-        console.log(response);
+
         if (response?.status === "completed") {
           setAIMessage(response?.message);
           setText("");
-          console.log("AI Message", response?.message);
           resetTranscript();
           break;
         }
@@ -109,32 +123,67 @@ const MockMasterAI = ({ params }) => {
     } catch (error) {
       console.error(error);
     }
-  };
+  }, [AIIds.current.threadId, AIIds.current.assistantId]);
+
+  // Initialize assistant and fetch case scenario
   useEffect(() => {
-    createassistant();
-    Createthread();
+    const fetchCaseScenario = async () => {
+      try {
+        const response = await axios.post(
+          `/GetInterviews/specificInterview`,
+          {
+            interviewId: params?.id,
+            role: params.role ? params.role : "user",
+          }
+        );
+        setCaseScenario({ scenario: response?.data?.data?.scenario });
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchCaseScenario();
   }, [params]);
 
+  // Initialize AI after case scenario is loaded
   useEffect(() => {
-    console.log(AIIds.current);
-  }, [AIIds.current]);
+    const initializeAI = async () => {
+      if (CaseScenario.scenario && !isInitialized) {
+        await createassistant();
+        await Createthread();
+        await Createmessage(JSON.stringify(CaseScenario));
+        setIsInitialized(true);
+      }
+    };
+    initializeAI();
+  }, [CaseScenario.scenario]);
 
+  // Create message when text changes (after initialization)
   useEffect(() => {
-    Createmessage();
-  }, [text]);
+    if (isInitialized && text) {
+      Createmessage(text);
+    }
+  }, [text, isInitialized]);
 
+  // Handle AI speech synthesis
   useEffect(() => {
     if (AIMessage?.trim() !== "") {
-      console.log("i am here");
       const utterance = new SpeechSynthesisUtterance(AIMessage);
+      utterance.onstart = () => {
+        setIsAiSpeaking(true);
+        setSpeaking("ai");
+      };
+      
+      // Cancel any ongoing speech before starting new one
+      window.speechSynthesis.cancel();
 
-      const voices = window.speechSynthesis.getVoices();
-      const indianVoice = voices.find((voice) => voice.lang === "hi-IN");
-      if (indianVoice) {
-        utterance.voice = indianVoice;
-      }
       utterance.rate = 1;
       utterance.pitch = 1;
+      
+      utterance.onend = () => {
+        setIsAiSpeaking(false);
+        setSpeaking(" ");
+      };
+      
       window.speechSynthesis.speak(utterance);
     }
   }, [AIMessage]);
