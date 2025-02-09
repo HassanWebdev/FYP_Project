@@ -6,12 +6,18 @@ import InitialLoadingScreen from "@/components/Custom/intialscreen";
 import SmoothScrolling from "@/components/Custom/SmoothScrolling";
 import { AntdRegistry } from '@ant-design/nextjs-registry';
 
-
 const fontSans = FontSans({
   subsets: ["latin"],
   variable: "--font-sans",
 });
 
+export const metadata = {
+  title: "MockMaster AI - Your Interview Preparation Partner",
+  description: "Practice interviews with AI-powered mock interviews. Get real-time feedback and improve your interview skills.",
+  icons: {
+    icon: "/AI.png",
+  },
+};
 
 export default function RootLayout({ children }) {
   return (

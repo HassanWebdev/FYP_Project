@@ -135,7 +135,7 @@ function Hero() {
       type: "polarArea",
       toolbar: { show: false },
       animations: {
-        enabled: true,
+        enabled: false,
         speed: 800,
       },
       background: "#1e293b",
@@ -178,8 +178,7 @@ function Hero() {
     chart: {
       type: "donut",
       animations: {
-        enabled: true,
-        speed: 800,
+        enabled: false,
       },
       background: "#1e293b",
     },
@@ -248,7 +247,7 @@ function Hero() {
             <div className="flex items-center gap-4">
               <button
                 onClick={handleCreateInterview}
-                className="relative inline-flex items-center gap-2 px-6 py-3 text-white overflow-hidden rounded-xl group"
+                className="relative inline-flex items-center gap-2 px-6 py-3 text-white overflow-hidden rounded-xl group h-[88px] "
               >
                 {/* Animated gradient background */}
                 <span className="absolute inset-0 w-full h-full transition-all duration-500 ease-in-out bg-gradient-to-l from-blue-600 via-purple-600 to-indigo-600 group-hover:bg-gradient-to-r"></span>
@@ -271,7 +270,7 @@ function Hero() {
               </button>
               <div
                 ref={timeRef}
-                className="bg-slate-800/50 p-6 rounded-2xl backdrop-blur-sm border border-slate-700 relative group overflow-hidden"
+                className="bg-slate-800/50 p-6 rounded-2xl backdrop-blur-sm border border-slate-700 relative group overflow-hidden h-[88px] "
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <div className="absolute inset-[2px] bg-slate-800 rounded-2xl z-10"></div>
@@ -284,7 +283,7 @@ function Hero() {
               </div>
               <button
                 onClick={handleLogout}
-                className="bg-slate-800/50 p-4 rounded-2xl backdrop-blur-sm border border-slate-700 relative group overflow-hidden hover:bg-red-500/10 transition-colors duration-300"
+                className="bg-slate-800/50 p-4 rounded-2xl backdrop-blur-sm border border-slate-700 relative group overflow-hidden hover:bg-red-500/10 transition-colors duration-300  flex items-center justify-center"
               >
                 <LogOut className="w-6 h-6 text-white group-hover:text-red-500 transition-colors duration-300" />
               </button>
@@ -398,7 +397,7 @@ function Hero() {
             <div ref={welcomeRef} className="flex items-center gap-4">
               <button
                 onClick={handleCreateInterview}
-                className="relative inline-flex items-center gap-2 px-6 py-3 text-white overflow-hidden rounded-xl group"
+                className="relative inline-flex items-center gap-2 px-6 py-3 text-white overflow-hidden rounded-xl group h-[100px] "
               >
                 {/* Animated gradient background */}
                 <span className="absolute inset-0 w-full h-full transition-all duration-500 ease-in-out bg-gradient-to-l from-blue-600 via-purple-600 to-indigo-600 group-hover:bg-gradient-to-r"></span>

@@ -85,7 +85,7 @@ const Navbar = ({ background }) => {
             <span className="absolute inset-0 border border-slate-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
             <span className="absolute bottom-0 left-0 w-full h-[2px] bg-blue-500 transform scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-500 ease-out"></span>
           </>
-        ) : (
+        ) : ( 
           <span className="absolute bottom-0 left-0 w-full h-[2px] bg-blue-500"></span>
         )}
       </Link>
@@ -96,12 +96,12 @@ const Navbar = ({ background }) => {
     <div
       className={`w-full ${
         mobile ? "px-5" : "px-10"
-      } font-neue_montreal overflow-hidden py-4 flex justify-between ${background}  z-50`}
+      } font-neue_montreal overflow-hidden py-4 flex justify-between items-center ${background}  z-50`}
     >
       <Link href="/">
         {" "}
         <div
-          className="logo flex"
+          className="logo flex items-center"
           onMouseEnter={startanimate}
           onMouseLeave={stopanimate}
         >

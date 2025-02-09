@@ -5,7 +5,7 @@ import Navbar from "@/components/Custom/Navbar";
 import { message } from "antd";
 import { Card } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import { PhoneOff } from "lucide-react";
+import { Mic, MicOff, PhoneOff } from "lucide-react";
 import SpeechRecognition, {
   useSpeechRecognition,
 } from "react-speech-recognition";
@@ -17,6 +17,7 @@ import {
   Run,
   AIResponse,
 } from "@/lib/helperfunctions";
+import { useRouter } from "next/navigation";
 
 const MockMasterAI = ({ params }) => {
   const user = JSON.parse(localStorage.getItem("user"));
@@ -27,42 +28,46 @@ const MockMasterAI = ({ params }) => {
   const [isAiSpeaking, setIsAiSpeaking] = useState(false);
   const [CaseScenario, setCaseScenario] = useState({ scenario: "" });
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isTerminated, setIsTerminated] = useState(false);
+  const [aiconnectloading, setAiconnectloading] = useState(true);
+  const router = useRouter();
 
   const AIIds = useRef({
     threadId: "",
     assistantId: "",
-    runId: "", 
+    runId: "",
     messageId: "",
   });
 
-  const {
-    transcript,
-    listening,
-    resetTranscript,
-    browserSupportsSpeechRecognition,
-  } = useSpeechRecognition({
-    continuous: true,
-  });
+  const { transcript, resetTranscript, browserSupportsSpeechRecognition } =
+    useSpeechRecognition();
 
-  // Handle browser speech recognition support
   useEffect(() => {
     if (!browserSupportsSpeechRecognition) {
       message.warning("Browser doesn't support speech recognition.");
       return;
     }
-
-    SpeechRecognition.startListening({ continuous: true });
     return () => SpeechRecognition.stopListening();
   }, []);
 
-  // Handle user speech detection
+  useEffect(() => {
+    if (isMuted) {
+      SpeechRecognition.stopListening();
+    } else if (aiconnectloading) {
+      SpeechRecognition.stopListening();
+    } else {
+      SpeechRecognition.startListening({ continuous: true });
+    }
+  }, [isMuted]);
+
   useEffect(() => {
     let silenceTimer;
 
     if (transcript) {
       setSpeaking("user");
       setIsRecording(true);
-      
+
       if (silenceTimer) clearTimeout(silenceTimer);
 
       silenceTimer = setTimeout(() => {
@@ -77,7 +82,6 @@ const MockMasterAI = ({ params }) => {
     };
   }, [transcript]);
 
-  // Toggle speech recognition based on AI speaking state
   useEffect(() => {
     if (isAiSpeaking) {
       SpeechRecognition.stopListening();
@@ -98,44 +102,49 @@ const MockMasterAI = ({ params }) => {
     AIIds.current.threadId = thread?.id;
   };
 
-  const Createmessage = useCallback(async (messageText) => {
-    if (!messageText?.trim()) return;
-    try {
-      const message = await CreateMessage(AIIds.current.threadId, messageText);
-      AIIds.current.messageId = message.id;
-
-      const run = await Run(AIIds.current.threadId, AIIds.current.assistantId);
-      AIIds.current.runId = run.id;
-
-      while (true) {
-        const response = await AIResponse(
+  const Createmessage = useCallback(
+    async (messageText) => {
+      if (!messageText?.trim()) return;
+      try {
+        const message = await CreateMessage(
           AIIds.current.threadId,
-          AIIds.current.runId
+          messageText
         );
+        AIIds.current.messageId = message.id;
 
-        if (response?.status === "completed") {
-          setAIMessage(response?.message);
-          setText("");
-          resetTranscript();
-          break;
+        const run = await Run(
+          AIIds.current.threadId,
+          AIIds.current.assistantId
+        );
+        AIIds.current.runId = run.id;
+
+        while (true) {
+          const response = await AIResponse(
+            AIIds.current.threadId,
+            AIIds.current.runId
+          );
+
+          if (response?.status === "completed") {
+            setAIMessage(response?.message);
+            setText("");
+            resetTranscript();
+            break;
+          }
         }
+      } catch (error) {
+        console.error(error);
       }
-    } catch (error) {
-      console.error(error);
-    }
-  }, [AIIds.current.threadId, AIIds.current.assistantId]);
+    },
+    [AIIds.current.threadId, AIIds.current.assistantId]
+  );
 
-  // Initialize assistant and fetch case scenario
   useEffect(() => {
     const fetchCaseScenario = async () => {
       try {
-        const response = await axios.post(
-          `/GetInterviews/specificInterview`,
-          {
-            interviewId: params?.id,
-            role: params.role ? params.role : "user",
-          }
-        );
+        const response = await axios.post(`/GetInterviews/specificInterview`, {
+          interviewId: params?.id,
+          role: params.role ? params.role : "user",
+        });
         setCaseScenario({ scenario: response?.data?.data?.scenario });
       } catch (error) {
         console.error(error);
@@ -144,7 +153,6 @@ const MockMasterAI = ({ params }) => {
     fetchCaseScenario();
   }, [params]);
 
-  // Initialize AI after case scenario is loaded
   useEffect(() => {
     const initializeAI = async () => {
       if (CaseScenario.scenario && !isInitialized) {
@@ -157,36 +165,99 @@ const MockMasterAI = ({ params }) => {
     initializeAI();
   }, [CaseScenario.scenario]);
 
-  // Create message when text changes (after initialization)
   useEffect(() => {
     if (isInitialized && text) {
       Createmessage(text);
     }
   }, [text, isInitialized]);
 
-  // Handle AI speech synthesis
+  const generateFeedback = async (feedback) => {
+    try {
+      console.log(feedback);
+    } catch (e) {}
+  };
+
   useEffect(() => {
     if (AIMessage?.trim() !== "") {
+      if (isTerminated) {
+        window.speechSynthesis.cancel();
+        generateFeedback(AIMessage);
+      }
       const utterance = new SpeechSynthesisUtterance(AIMessage);
       utterance.onstart = () => {
         setIsAiSpeaking(true);
         setSpeaking("ai");
+        if (aiconnectloading) {
+          setAiconnectloading(false);
+        }
       };
-      
-      // Cancel any ongoing speech before starting new one
+
       window.speechSynthesis.cancel();
 
       utterance.rate = 1;
       utterance.pitch = 1;
-      
+
       utterance.onend = () => {
         setIsAiSpeaking(false);
         setSpeaking(" ");
+        SpeechRecognition.startListening({ continuous: true });
       };
-      
+
       window.speechSynthesis.speak(utterance);
     }
   }, [AIMessage]);
+
+  const terminateSession = () => {
+    setIsTerminated(true);
+    window.speechSynthesis.cancel();
+    SpeechRecognition.stopListening();
+    setAiconnectloading(true);
+    setText("Hey Goodbye");
+    router.push("/");
+  };
+
+  if (aiconnectloading) {
+    return (
+      <div className="flex flex-col justify-center items-center h-screen bg-slate-900">
+        <div className="bg-slate-800/90 p-8 rounded-2xl border border-slate-700 shadow-xl backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-6">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+              className="w-16 h-16 rounded-full border-4 border-blue-500 border-t-transparent"
+            />
+            <div className="text-center">
+              <h2 className="text-2xl font-semibold text-white mb-2">
+                {isTerminated ? "Genrating the Feedback" : "Connecting to AI"}
+              </h2>
+              <p className="text-slate-400">
+                {isTerminated
+                  ? "Please wait while AI analyzes your performance"
+                  : " Please wait while we establish a secure connection..."}
+              </p>
+            </div>
+            <div className="flex gap-2">
+              {[...Array(3)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  animate={{
+                    scale: [1, 1.2, 1],
+                    opacity: [0.5, 1, 0.5],
+                  }}
+                  transition={{
+                    duration: 1,
+                    repeat: Infinity,
+                    delay: i * 0.2,
+                  }}
+                  className="w-3 h-3 rounded-full bg-blue-500"
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0F172A] relative overflow-hidden">
@@ -379,22 +450,39 @@ const MockMasterAI = ({ params }) => {
         </div>
       </div>{" "}
       {/* End Call Button */}
-      <motion.button
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-gradient-to-r from-slate-800/90 to-slate-900/90 hover:from-slate-700/90 hover:to-slate-800/90 text-white px-8 py-4 rounded-xl flex items-center gap-3 border border-slate-600/50 shadow-lg backdrop-blur-sm group transition-all duration-300"
-        transition={{ type: "spring", stiffness: 400, damping: 17 }}
-      >
-        <motion.div
-          initial={{ rotate: 0 }}
-          animate={{ rotate: 360 }}
-          transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-          className="relative"
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col gap-4">
+        <motion.button
+          onClick={terminateSession}
+          className="bg-gradient-to-r from-slate-800/90 to-slate-900/90 hover:from-slate-700/90 hover:to-slate-800/90 text-white px-8 py-4 rounded-xl flex items-center gap-3 border border-slate-600/50 shadow-lg backdrop-blur-sm group transition-all duration-300"
+          transition={{ type: "spring", stiffness: 400, damping: 17 }}
         >
-          <PhoneOff className="w-6 h-6 text-red-400 group-hover:text-red-300 transition-colors duration-300" />
-        </motion.div>
-        <span className="font-medium tracking-wide text-slate-200 group-hover:text-white transition-colors duration-300">
-          Terminate Session
-        </span>
-      </motion.button>
+          <motion.div
+            initial={{ scale: 1 }}
+            whileHover={{ scale: 1.1 }}
+            className="relative"
+          >
+            <PhoneOff className="w-6 h-6 text-red-400 group-hover:text-red-300 transition-colors duration-300" />
+          </motion.div>
+        </motion.button>
+
+        <motion.button
+          className="bg-gradient-to-r from-slate-800/90 to-slate-900/90 hover:from-slate-700/90 hover:to-slate-800/90 text-white p-4 rounded-xl flex items-center gap-3 border border-slate-600/50 shadow-lg backdrop-blur-sm group transition-all duration-300"
+          transition={{ type: "spring", stiffness: 400, damping: 17 }}
+          onClick={() => setIsMuted(!isMuted)}
+        >
+          <motion.div
+            initial={{ scale: 1 }}
+            whileHover={{ scale: 1.1 }}
+            className="relative"
+          >
+            {isMuted ? (
+              <MicOff className="w-6 h-6 text-red-400 group-hover:text-red-300 transition-colors duration-300" />
+            ) : (
+              <Mic className="w-6 h-6 text-emerald-400 group-hover:text-emerald-300 transition-colors duration-300" />
+            )}
+          </motion.div>
+        </motion.button>
+      </div>
     </div>
   );
 };
