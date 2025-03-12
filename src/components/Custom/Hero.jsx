@@ -64,17 +64,152 @@ function Hero() {
     }
   };
 
+  // useGSAP(() => {
+  //   // Mouse follower animation
+  //   window.addEventListener("mousemove", (e) => {
+  //     gsap.to("#mouse", {
+  //       x: e.clientX,
+  //       y: e.clientY,
+  //       duration: 0.4,
+  //       ease: "none",
+  //     });
+  //   });
+  // });
+
   useGSAP(() => {
-    // Mouse follower animation
-    window.addEventListener("mousemove", (e) => {
-      gsap.to("#mouse", {
-        x: e.clientX,
-        y: e.clientY,
-        duration: 0.4,
-        ease: "none",
+    const container = document.createElement("div");
+    container.style.position = "fixed";
+    container.style.top = "0";
+    container.style.left = "0";
+    container.style.width = "100%";
+    container.style.height = "100%";
+    container.style.pointerEvents = "none";
+    container.style.zIndex = "9999";
+    document.body.appendChild(container);
+
+    const existingMouse = document.getElementById("mouse");
+    if (existingMouse) {
+      existingMouse.remove();
+    }
+
+    const cursor = document.createElement("div");
+    cursor.id = "mouse";
+    cursor.style.width = "16px";
+    cursor.style.height = "16px";
+    cursor.style.borderRadius = "50%";
+    cursor.style.backgroundColor = "rgba(255, 255, 255, 0.9)";
+    cursor.style.position = "fixed";
+    cursor.style.transform = "translate(-50%, -50%)";
+    cursor.style.mixBlendMode = "difference";
+    cursor.style.boxShadow = "0 0 15px rgba(255, 255, 255, 0.5)";
+    cursor.style.zIndex = "99";
+    cursor.style.pointerEvents = "none";
+    container.appendChild(cursor);
+
+    const trailCount = 4;
+    const trails = [];
+
+    for (let i = 0; i < trailCount; i++) {
+      const trail = document.createElement("div");
+      trail.className = "mouse-trail";
+      trail.style.width = `${12 - i * 2}px`;
+      trail.style.height = `${12 - i * 2}px`;
+      trail.style.borderRadius = "50%";
+      trail.style.backgroundColor = `rgba(255, 255, 255, ${0.7 - i * 0.15})`;
+      trail.style.position = "fixed";
+      trail.style.transform = "translate(-50%, -50%)";
+      trail.style.mixBlendMode = "difference";
+      trail.style.zIndex = "98";
+      trail.style.pointerEvents = "none";
+      container.appendChild(trail);
+      trails.push(trail);
+    }
+
+    let mouseX = 0;
+    let mouseY = 0;
+    let prevMouseX = 0;
+    let prevMouseY = 0;
+
+    const handleMouseMove = (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+
+      const velocityX = Math.abs(mouseX - prevMouseX);
+      const velocityY = Math.abs(mouseY - prevMouseY);
+      const velocity = Math.min(
+        Math.sqrt(velocityX * velocityX + velocityY * velocityY) * 0.05,
+        1
+      );
+
+      gsap.to(cursor, {
+        width: 16 + velocity * 20,
+        height: 16 + velocity * 20,
+        duration: 0.3,
       });
-    });
-  });
+
+      prevMouseX = mouseX;
+      prevMouseY = mouseY;
+    };
+
+    const render = () => {
+      gsap.to(cursor, {
+        x: mouseX,
+        y: mouseY,
+        duration: 0.3,
+        ease: "power2.out",
+      });
+
+      trails.forEach((trail, index) => {
+        gsap.to(trail, {
+          x: mouseX,
+          y: mouseY,
+          duration: 0.5 + index * 0.1,
+          ease: "power3.out",
+          delay: index * 0.04,
+        });
+      });
+
+      requestAnimationFrame(render);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    render();
+
+    const addHoverEffects = () => {
+      const interactiveElements = document.querySelectorAll(
+        'a, button, input, select, textarea, [role="button"]'
+      );
+
+      interactiveElements.forEach((el) => {
+        el.addEventListener("mouseenter", () => {
+          gsap.to(cursor, {
+            width: 40,
+            height: 40,
+            backgroundColor: "rgba(255, 255, 255, 0.9)",
+            duration: 0.3,
+          });
+        });
+
+        el.addEventListener("mouseleave", () => {
+          gsap.to(cursor, {
+            width: 16,
+            height: 16,
+            backgroundColor: "rgba(255, 255, 255, 0.9)",
+            duration: 0.3,
+          });
+        });
+      });
+    };
+
+    addHoverEffects();
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      if (container && document.body.contains(container)) {
+        document.body.removeChild(container);
+      }
+    };
+  }, []);
 
   // Chart configurations remain the same
   const interviewChartOptions = {
@@ -221,10 +356,10 @@ function Hero() {
   if (userRole === "admin") {
     return (
       <div className="min-h-screen bg-slate-900 p-8">
-        <div
+        {/* <div
           id="mouse"
           className={`w-5 h-5 bg-blue-500 fixed top-0 left-0 z-[99] rounded-full pointer-events-none blur-sm`}
-        ></div>
+        ></div> */}
 
         <div className="max-w-full">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
@@ -371,11 +506,6 @@ function Hero() {
   // Original user UI
   return (
     <div className="min-h-screen bg-slate-900 p-8">
-      <div
-        id="mouse"
-        className={`w-5 h-5 bg-blue-500 fixed top-0 left-0 z-[99] rounded-full pointer-events-none blur-sm`}
-      ></div>
-
       <div className="max-w-full">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div
@@ -440,9 +570,7 @@ function Hero() {
             </button>
           </div>
         </div>
-        <Card
-          className="col-span-full md:col-span-2 bg-slate-800 border-slate-700 mb-6 relative group overflow-hidden"
-        >
+        <Card className="col-span-full md:col-span-2 bg-slate-800 border-slate-700 mb-6 relative group overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           <div className="absolute inset-[2px] bg-slate-800 rounded-lg z-10"></div>
           <div className="relative z-20">
@@ -500,9 +628,7 @@ function Hero() {
             </CardContent>
           </div>
         </Card>
-        <div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-        >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[
             {
               title: "Interview Analytics",

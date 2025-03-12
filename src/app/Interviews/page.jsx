@@ -8,6 +8,8 @@ import "./styles.css";
 import Link from "next/link";
 import withauth from "../../components/Custom/withauth";
 import axios from "../../lib/axioshttp";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
 
 function Page() {
   const router = useRouter();
@@ -32,6 +34,7 @@ function Page() {
     setLoading(true);
     fetchInterviews();
   }, [activeTab]);
+
 
   const LoadingSpinner = () => (
     <div className="flex justify-center items-center w-full h-screen p-10">

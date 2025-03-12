@@ -4,7 +4,8 @@ import { cn } from "@/lib/utils";
 import Transtionprovider from "@/components/Custom/TransitionProvider";
 import InitialLoadingScreen from "@/components/Custom/intialscreen";
 import SmoothScrolling from "@/components/Custom/SmoothScrolling";
-import { AntdRegistry } from '@ant-design/nextjs-registry';
+import { AntdRegistry } from "@ant-design/nextjs-registry";
+import CustomMouse from "@/components/Custom/CustomMouse";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -13,7 +14,8 @@ const fontSans = FontSans({
 
 export const metadata = {
   title: "MockMaster AI - Your Interview Preparation Partner",
-  description: "Practice interviews with AI-powered mock interviews. Get real-time feedback and improve your interview skills.",
+  description:
+    "Practice interviews with AI-powered mock interviews. Get real-time feedback and improve your interview skills.",
   icons: {
     icon: "/AI.png",
   },
@@ -29,12 +31,14 @@ export default function RootLayout({ children }) {
           fontSans.variable
         )}
       >
-          <SmoothScrolling>
+        <SmoothScrolling>
           {/* <InitialLoadingScreen /> */}
           <Transtionprovider>
-            <AntdRegistry>{children}</AntdRegistry>
-            </Transtionprovider>
-        </SmoothScrolling> 
+            <AntdRegistry>
+              <CustomMouse>{children}</CustomMouse>
+            </AntdRegistry>
+          </Transtionprovider>
+        </SmoothScrolling>
       </body>
     </html>
   );

@@ -171,7 +171,7 @@ const MockMasterAI = ({ params }) => {
     }
   }, [text, isInitialized]);
 
-  const generateFeedback = async (feedback) => {
+  const storeFeedback = async (feedback) => {
     try {
       console.log(feedback);
     } catch (e) {}
@@ -181,7 +181,7 @@ const MockMasterAI = ({ params }) => {
     if (AIMessage?.trim() !== "") {
       if (isTerminated) {
         window.speechSynthesis.cancel();
-        generateFeedback(AIMessage);
+        storeFeedback(AIMessage);
       }
       const utterance = new SpeechSynthesisUtterance(AIMessage);
       utterance.onstart = () => {
@@ -211,9 +211,10 @@ const MockMasterAI = ({ params }) => {
     setIsTerminated(true);
     window.speechSynthesis.cancel();
     SpeechRecognition.stopListening();
+    resetTranscript();
     setAiconnectloading(true);
     setText("Hey Goodbye");
-    router.push("/");
+    // router.push("/");
   };
 
   if (aiconnectloading) {
