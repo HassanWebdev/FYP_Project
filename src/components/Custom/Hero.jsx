@@ -21,15 +21,15 @@ function Hero() {
   const chartsRef = useRef(null);
 
   useEffect(() => {
-    // Initialize time on mount
+    
     setCurrentTime(new Date().toLocaleTimeString());
 
-    // Update time every second
+    
     const timer = setInterval(() => {
       setCurrentTime(new Date().toLocaleTimeString());
     }, 1000);
 
-    // Cleanup interval on unmount
+    
     return () => clearInterval(timer);
   }, []);
 
@@ -64,17 +64,17 @@ function Hero() {
     }
   };
 
-  // useGSAP(() => {
-  //   // Mouse follower animation
-  //   window.addEventListener("mousemove", (e) => {
-  //     gsap.to("#mouse", {
-  //       x: e.clientX,
-  //       y: e.clientY,
-  //       duration: 0.4,
-  //       ease: "none",
-  //     });
-  //   });
-  // });
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
 
   useGSAP(() => {
     const container = document.createElement("div");
@@ -211,7 +211,7 @@ function Hero() {
     };
   }, []);
 
-  // Chart configurations remain the same
+  
   const interviewChartOptions = {
     chart: {
       type: "bar",
@@ -503,7 +503,7 @@ function Hero() {
     );
   }
 
-  // Original user UI
+  
   return (
     <div className="min-h-screen bg-slate-900 p-8">
       <div className="max-w-full">

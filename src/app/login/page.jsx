@@ -12,7 +12,7 @@ export default function Login() {
   const [form] = Form.useForm();
 
   useEffect(() => {
-    // Check if already logged in
+    
     if (typeof window !== "undefined") {
       const token = localStorage.getItem("token");
       if (token) {
@@ -23,21 +23,21 @@ export default function Login() {
 
   const onFinish = async (values) => {
     try {
-      // Validate form fields
+      
       await form.validateFields();
       setLoading(true);
 
       const response = await axios.post("/Auth/login", values);
       const data = response.data;
 
-      // Store token in localStorage
+      
       if (typeof window !== "undefined") {
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
       }
 
       message.success("Login successful!");
-      router.push("/"); // Redirect to dashboard after successful login
+      router.push("/"); 
     } catch (error) {
       message.error(error.response?.data?.error || "Login failed!");
     } finally {

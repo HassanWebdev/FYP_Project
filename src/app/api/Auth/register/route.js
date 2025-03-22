@@ -7,17 +7,17 @@ import User from "../../models/UserregisterModal";
 export async function POST(req) {
   try {
     const { name, email, password, role, adminKey, phone } = await req.json();
-    // Validate input
+    
     if (!name || !email || !password || !phone) {
       return NextResponse.json(
         { error: "Please provide all required fields" },
         { status: 400 }
       );
     }
-    // Connect to database
+    
     await connectDB();
 
-    // Check if user already exists
+    
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return NextResponse.json(
@@ -26,17 +26,17 @@ export async function POST(req) {
       );
     }
 
-    // Hash password
+    
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create new user with admin key if role is admin
+    
     const userData = {
       name,
       email,
       password: hashedPassword,
       phone,
-      role: role || "user", // Use provided role or default to 'user'
+      role: role || "user", 
     };
 
     if (role === "admin") {
@@ -45,7 +45,7 @@ export async function POST(req) {
 
     const user = await User.create(userData);
 
-    // Generate JWT token
+    
     const token = jwt.sign({ userId: user._id }, "AABBCCDDEEFFGGHH", {
       expiresIn: "7d",
     });

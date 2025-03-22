@@ -12,7 +12,7 @@ const TransitionProvider = ({ children }) => {
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   useEffect(() => {
-    // Skip transition for login, register, and nested routes
+    
     if (
       pathname === "/login" || 
       pathname === "/register" || 
@@ -21,7 +21,7 @@ const TransitionProvider = ({ children }) => {
       return;
     }
 
-    // Extract the path name without leading slash and convert to title case
+    
     const pathSegments = pathname.split("/").filter(Boolean);
     const displayPath =
       pathSegments.length === 0
@@ -83,7 +83,7 @@ const TransitionProvider = ({ children }) => {
     }
   }, [pathname]);
 
-  // Skip rendering transition elements for login and register pages
+  
   if (
     pathname === "/login" || 
     pathname === "/register" || 

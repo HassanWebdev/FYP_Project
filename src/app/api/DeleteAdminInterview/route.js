@@ -5,10 +5,9 @@ import MockCasesAdd from "../models/MockCasesAdd";
 
 export async function POST(req) {
   try {
-    // Connect to database
+    
     await connectDB();
 
-    // Get token from headers
     const token = req.headers.get("authorization")?.split(" ")[1];
 
     if (!token) {
@@ -18,21 +17,21 @@ export async function POST(req) {
       );
     }
 
-    // Verify token
+    
     try {
       jwt.verify(token, process.env.JWT_SECRET);
     } catch (error) {
       return NextResponse.json({ message: "Invalid token" }, { status: 401 });
     }
 
-    // Get ID from request body
+    
     const { id } = await req.json();
 
     if (!id) {
       return NextResponse.json({ message: "ID is required" }, { status: 400 });
     }
 
-    // Delete the mock case
+    
     const deletedCase = await MockCasesAdd.findByIdAndDelete(id);
 
     if (!deletedCase) {

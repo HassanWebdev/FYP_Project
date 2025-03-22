@@ -214,7 +214,7 @@ const MockMasterAI = ({ params }) => {
     resetTranscript();
     setAiconnectloading(true);
     setText("Hey Goodbye");
-    // router.push("/");
+    
   };
 
   if (aiconnectloading) {

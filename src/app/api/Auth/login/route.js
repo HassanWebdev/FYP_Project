@@ -8,7 +8,7 @@ export async function POST(req) {
   try {
     const { email, password } = await req.json();
 
-    // Validate input
+    
     if (!email || !password) {
       return NextResponse.json(
         { error: "Please provide email and password" },
@@ -16,10 +16,10 @@ export async function POST(req) {
       );
     }
 
-    // Connect to database
+    
     await connectDB();
 
-    // Find user by email
+    
     const user = await Login.findOne({ email });
     if (!user) {
       return NextResponse.json(
@@ -28,13 +28,13 @@ export async function POST(req) {
       );
     }
 
-    // Verify password
+    
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return NextResponse.json({ error: "Invalid Password" }, { status: 401 });
     }
 
-    // Generate JWT token
+    
     const token = jwt.sign({ userId: user._id }, "AABBCCDDEEFFGGHH", {
       expiresIn: "7d",
     });

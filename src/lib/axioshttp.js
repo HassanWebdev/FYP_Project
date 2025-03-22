@@ -7,7 +7,7 @@ const axiosInstance = axios.create({
   },
 });
 
-// Request interceptor
+
 axiosInstance.interceptors.request.use(
   (config) => {
     if (typeof window !== "undefined") {
@@ -23,7 +23,7 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-// Response interceptor
+
 axiosInstance.interceptors.response.use(
   (response) => {
     return response;

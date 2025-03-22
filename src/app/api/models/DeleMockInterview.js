@@ -17,7 +17,7 @@ const deleteMockInterviewSchema = new mongoose.Schema({
   }
 });
 
-// Create model if it doesn't exist
+
 const DeleteMockInterview = mongoose.models.DeleteMockInterview || mongoose.model("DeleteMockInterview", deleteMockInterviewSchema);
 
 export default DeleteMockInterview;

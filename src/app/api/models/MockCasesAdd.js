@@ -73,7 +73,7 @@ const mockCaseSchema = new mongoose.Schema({
   },
 });
 
-// Create model if it doesn't exist
+
 const MockCase =
   mongoose.models.MockCase || mongoose.model("MockCase", mockCaseSchema);
 

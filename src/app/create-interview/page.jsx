@@ -336,7 +336,7 @@ const CreateInterview = () => {
             border-color: #475569 !important;
           }
 
-          /* Exhibit Table Styling */
+         
           .ant-table {
             background: #1e293b !important;
             color: white !important;
@@ -361,7 +361,7 @@ const CreateInterview = () => {
             background: #334155 !important;
           }
 
-          /* Exhibit Add Button Styling */
+         
           .ant-btn-default {
             background: #334155 !important;
             border-color: #475569 !important;

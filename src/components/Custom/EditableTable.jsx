@@ -47,11 +47,11 @@ export default function EditableTable({
   const handleCreation = (data) => {
     const headers = data.headers;
     if (typeof headers !== "undefined") {
-      // to check if the header value is changed
+      
       const updatedHeaders = headers.filter(({colValue, oldColValue}) => {
         return colValue !== oldColValue;
       });
-      //in case if header value is removed so update the data source accordingly
+      
       const emptyHeaders = headers.filter(({colValue}) => {
         return colValue === "";
       });
@@ -68,7 +68,7 @@ export default function EditableTable({
         );
         setTableData([...filteredupdatedDataSource]);
       } else {
-        //In case if we edit the header value it will change keys rows accordingly
+        
         const newDataSource = [];
         dataSource.map((source, sourceIndex) => {
           let newSource = {...source};
@@ -89,7 +89,7 @@ export default function EditableTable({
 
     if (data.headers) {
       setAction(data.action);
-      // when we add a new header
+      
       const newHeaders = data.headers
         .filter((h) => h.colValue !== "")
         .map((h, index) => ({
@@ -98,7 +98,7 @@ export default function EditableTable({
           dataIndex: h[`header${!h.colKey ? index + 1 : h.colKey}`],
           editable: true,
         }));
-      // to check if the action column exist or not
+      
       if (!newHeaders.length) {
         setColumns([]);
         setAddHeader(false);
@@ -111,7 +111,7 @@ export default function EditableTable({
         }
       }
     } else {
-      // if we do creation in row modal
+      
       const checkValues = (data) => {
         return !Object.entries(data).every(([key, value]) => {
           if (key !== "colKey" && key !== "key") {
@@ -145,7 +145,7 @@ export default function EditableTable({
 
 
   const handleUpdate = (data) => {
-    // checking that coming  object has all values empty or  not & update data accordingly
+    
     const checkValues = (data) => {
       return !Object.entries(data).every(([key, value]) => {
         if (key !== "colKey" && key !== "key") {

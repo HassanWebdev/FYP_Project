@@ -17,7 +17,7 @@ const Generate = () => {
     difficulty_level: "",
   });
 
-  // Animation variants for loading spinner
+  
   const spinnerVariants = {
     animate: {
       rotate: 360,
@@ -29,7 +29,7 @@ const Generate = () => {
     },
   };
 
-  // Animation variants for pulse effect
+  
   const pulseVariants = {
     animate: {
       scale: [1, 1.1, 1],
@@ -42,7 +42,7 @@ const Generate = () => {
     },
   };
 
-  // Animation variants for floating elements
+  
   const floatVariants = {
     animate: {
       y: [0, -10, 0],
@@ -54,7 +54,7 @@ const Generate = () => {
     },
   };
 
-  // Animation variants for form elements
+  
   const formItemVariants = {
     hidden: { opacity: 0, x: -20 },
     visible: (i) => ({
@@ -271,7 +271,7 @@ Note: Generate fresh, randomized data for each case while maintaining realism an
 
     try {
       const response = await axios.post(
-        "https://api.openai.com/v1/chat/completions",
+        `https://api.openai.com/v1/chat/completion`,
         {
           model: "gpt-3.5-turbo",
           messages: [

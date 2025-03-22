@@ -19,7 +19,7 @@ const loginSchema = new mongoose.Schema({
   }
 });
 
-// Create model if it doesn't exist
+
 const Login = mongoose.models.Login || mongoose.model('Login', loginSchema);
 
 export default Login;

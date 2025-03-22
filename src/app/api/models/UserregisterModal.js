@@ -29,7 +29,7 @@ const userSchema = new mongoose.Schema({
     required: function() {
       return this.role === 'admin';
     },
-    select: false // Don't include in query results by default
+    select: false 
   },
   createdAt: {
     type: Date,
@@ -42,7 +42,7 @@ const userSchema = new mongoose.Schema({
   }
 });
 
-// Create model if it doesn't exist 
+
 const User = mongoose.models.User || mongoose.model('User', userSchema);
 
 export default User;

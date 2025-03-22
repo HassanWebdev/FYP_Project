@@ -18,12 +18,12 @@ export default function TableRowsCreation({
   const handleOk = () => {
     setLoading(true);
     setOpen(false);
-    // const filteredValues = Object.keys(values).reduce((acc, key) => {
-    //   if (values[key] !== "") {
-    //     acc[key] = values[key];
-    //   }
-    //   return acc;
-    // }, {});
+    
+    
+    
+    
+    
+    
 
     if (row) {
       if (row.key == undefined) {

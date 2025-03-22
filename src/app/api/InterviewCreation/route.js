@@ -5,13 +5,13 @@ import jwt from "jsonwebtoken";
 
 export async function POST(req) {
   try {
-    // Get authorization header
+    
     const authHeader = req.headers.get("authorization");
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return NextResponse.json({ error: "No token provided" }, { status: 401 });
     }
 
-    // Extract and verify token
+    
     const token = authHeader.split(" ")[1];
     let decodedToken;
     try {
@@ -24,11 +24,11 @@ export async function POST(req) {
 
     const data = await req.json();
 
-    // Create new interview document with user ID from token
+    
     const interview = new Interview({
       title: data.title,
       scenario: data.scenario,
-      userId: decodedToken.userId, // Use ID from verified token
+      userId: decodedToken.userId, 
       feedback: data.feedback,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -37,7 +37,7 @@ export async function POST(req) {
       duration: 0,
     });
 
-    // Save to database
+    
     await interview.save();
 
     return NextResponse.json(

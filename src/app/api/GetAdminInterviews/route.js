@@ -6,7 +6,7 @@ import MockCase from "../models/MockCasesAdd";
 export async function GET(request) {
   try {
     console.log(request);
-    // Get token from authorization header
+    
     const authHeader = request.headers.get("authorization");
     if (!authHeader || !authHeader.startsWith("Bearer")) {
       return NextResponse.json(
@@ -17,15 +17,15 @@ export async function GET(request) {
 
     const token = authHeader.split(" ")[1];
 
-    console.log('JWT Secret:', process.env.JWT_SECRET); // Remove this in production
-    // Verify and decode token
+    console.log('JWT Secret:', process.env.JWT_SECRET); 
+    
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.userId;
 
-    // Connect to database
+    
     await connectToDB();
 
-    // Find all mock cases
+    
     const mockCases = await MockCase.find({}).sort({ createdAt: -1 });
 
     if (!mockCases) {

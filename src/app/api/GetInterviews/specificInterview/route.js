@@ -6,7 +6,7 @@ import MockCase from "../../models/MockCasesAdd";
 
 export async function POST(request) {
   try {
-    // Get token from authorization header
+    
     const authHeader = request.headers.get("authorization");
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return NextResponse.json(
@@ -17,23 +17,23 @@ export async function POST(request) {
 
     const token = authHeader.split(" ")[1];
 
-    // Verify and decode token
+    
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.userId;
 
-    // Connect to database
+    
     await connectToDB();
 
-    // Get interview ID and role from request body
+    
     const { interviewId, role } = await request.json();
 
-    // Choose model based on role
+    
     const Model = role === 'admin' ? MockCase : Interview;
 
-    // Find specific interview/mockcase
+    
     const interview = await Model.findOne({
       _id: interviewId,
-      ...(role === 'user' && { userId: userId }) // Only include userId filter for regular users
+      ...(role === 'user' && { userId: userId }) 
     });
 
     if (!interview) {
