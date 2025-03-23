@@ -21,6 +21,7 @@ import AWS from "aws-sdk";
 import { useRouter } from "next/navigation";
 
 const MockMasterAI = ({ params }) => {
+  const polyytwo = new AWS.Polly();
   const user = JSON.parse(localStorage.getItem("user"));
   const [text, setText] = useState("");
   const [speaking, setSpeaking] = useState(" ");
@@ -46,12 +47,10 @@ const MockMasterAI = ({ params }) => {
   const { transcript, resetTranscript, browserSupportsSpeechRecognition } =
     useSpeechRecognition();
 
-  // Setup audio listeners and handle microphone control based on audio state
   useEffect(() => {
     const setupAudioListeners = () => {
       if (!audioRef.current) return;
 
-      // When audio starts playing, mute the microphone and set AI as speaking
       const handlePlay = () => {
         console.log("Audio started playing");
         setIsAiSpeaking(true);
@@ -59,7 +58,6 @@ const MockMasterAI = ({ params }) => {
         SpeechRecognition.stopListening();
       };
 
-      // When audio ends, unmute the microphone and set user as speaking
       const handleEnded = () => {
         console.log("Audio ended");
         setIsAiSpeaking(false);
@@ -69,7 +67,6 @@ const MockMasterAI = ({ params }) => {
         }
       };
 
-      // Handle audio errors
       const handleError = (e) => {
         console.error("Audio playback error:", e);
         setIsAiSpeaking(false);
@@ -103,16 +100,14 @@ const MockMasterAI = ({ params }) => {
     return () => SpeechRecognition.stopListening();
   }, []);
 
-  // Control microphone based on mute button and loading state
   useEffect(() => {
-    if (isMuted || aiconnectloading || isAiSpeaking || isTerminated) {
-      SpeechRecognition.stopListening();
-    } else {
-      SpeechRecognition.startListening({ continuous: true });
-    }
+    // if (isMuted || aiconnectloading || isAiSpeaking || isTerminated) {
+    //   SpeechRecognition.stopListening();
+    // } else {
+    //   SpeechRecognition.startListening({ continuous: true });
+    // }
   }, [isMuted, aiconnectloading, isAiSpeaking, isTerminated]);
 
-  // AWS Polly initialization
   useEffect(() => {
     AWS.config.update({
       region: "us-east-1",
@@ -123,7 +118,6 @@ const MockMasterAI = ({ params }) => {
     setPolly(new AWS.Polly());
   }, []);
 
-  // Handle user speech and silence detection
   useEffect(() => {
     let silenceTimer;
 
@@ -210,7 +204,7 @@ const MockMasterAI = ({ params }) => {
 
   useEffect(() => {
     const initializeAI = async () => {
-      if (CaseScenario.scenario && !isInitialized && polly) {
+      if ((CaseScenario.scenario && !isInitialized && (polly || polyytwo))) {
         try {
           await createassistant();
           await Createthread();
@@ -225,7 +219,7 @@ const MockMasterAI = ({ params }) => {
       }
     };
     initializeAI();
-  }, [CaseScenario.scenario, isInitialized, polly]);
+  }, [CaseScenario.scenario, isInitialized, polly ]);
 
   useEffect(() => {
     if (isInitialized && text) {
@@ -236,15 +230,13 @@ const MockMasterAI = ({ params }) => {
   const storeFeedback = async (feedback) => {
     try {
       console.log("Storing feedback:", feedback);
-      // Implement actual feedback storage logic here
     } catch (e) {
       console.error("Error storing feedback:", e);
     }
   };
 
-  // Process AI message and convert to speech
   useEffect(() => {
-    if (AIMessage?.trim() !== "" && polly) {
+    if (AIMessage?.trim() !== "" && (polly || polyytwo)) {
       if (isTerminated) {
         storeFeedback(AIMessage);
       }
@@ -254,10 +246,9 @@ const MockMasterAI = ({ params }) => {
           Text: AIMessage,
           OutputFormat: "mp3",
           VoiceId: "Matthew",
-          Engine: "generative",
+          Engine: "neural",
         };
 
-        // Use the Polly synthesizeSpeech method
         polly.synthesizeSpeech(params, (err, data) => {
           if (err) {
             console.error("Error with Polly:", err);
@@ -265,7 +256,6 @@ const MockMasterAI = ({ params }) => {
             return;
           }
 
-          // Create a Blob from the audio data
           const uInt8Array = new Uint8Array(data.AudioStream);
           const blob = new Blob([uInt8Array.buffer], {
             type: data.ContentType,
@@ -273,19 +263,17 @@ const MockMasterAI = ({ params }) => {
           const url = URL.createObjectURL(blob);
           setAiconnectloading(false);
 
-          // Set the audio source and play with a small delay to ensure preparation
           if (audioRef.current) {
             audioRef.current.src = url;
             audioRef.current.load();
 
-            // Small delay to ensure the browser has time to load the audio
             setTimeout(() => {
               const playPromise = audioRef.current.play();
 
               if (playPromise !== undefined) {
                 playPromise.catch((error) => {
                   console.error("Error playing audio:", error);
-                  // If playback fails, make sure we reset the speaking state
+
                   setIsAiSpeaking(false);
                   if (!isMuted && !isTerminated) {
                     SpeechRecognition.startListening({ continuous: true });
@@ -310,10 +298,9 @@ const MockMasterAI = ({ params }) => {
     SpeechRecognition.stopListening();
     resetTranscript();
     setAiconnectloading(true);
-    setText("Hey Goodbye");
+    // setText("Hey Goodbye");
   };
 
-  // Always render the audio element regardless of loading state
   const renderAudio = () => (
     <audio
       ref={audioRef}

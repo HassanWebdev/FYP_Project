@@ -32,7 +32,7 @@ export default function RootLayout({ children }) {
         )}
       >
         <SmoothScrolling>
-          {/* <InitialLoadingScreen /> */}
+          <InitialLoadingScreen />
           <Transtionprovider>
             <AntdRegistry>
               <CustomMouse>{children}</CustomMouse>
