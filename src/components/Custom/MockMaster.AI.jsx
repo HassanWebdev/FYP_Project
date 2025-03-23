@@ -17,6 +17,7 @@ import {
   Run,
   AIResponse,
 } from "@/lib/helperfunctions";
+import AWS from "aws-sdk";
 import { useRouter } from "next/navigation";
 
 const MockMasterAI = ({ params }) => {
@@ -30,8 +31,10 @@ const MockMasterAI = ({ params }) => {
   const [isInitialized, setIsInitialized] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isTerminated, setIsTerminated] = useState(false);
+  const [polly, setPolly] = useState(null);
   const [aiconnectloading, setAiconnectloading] = useState(true);
   const router = useRouter();
+  const audioRef = useRef(null);
 
   const AIIds = useRef({
     threadId: "",
@@ -43,6 +46,55 @@ const MockMasterAI = ({ params }) => {
   const { transcript, resetTranscript, browserSupportsSpeechRecognition } =
     useSpeechRecognition();
 
+  // Setup audio listeners and handle microphone control based on audio state
+  useEffect(() => {
+    const setupAudioListeners = () => {
+      if (!audioRef.current) return;
+
+      // When audio starts playing, mute the microphone and set AI as speaking
+      const handlePlay = () => {
+        console.log("Audio started playing");
+        setIsAiSpeaking(true);
+        setSpeaking("ai");
+        SpeechRecognition.stopListening();
+      };
+
+      // When audio ends, unmute the microphone and set user as speaking
+      const handleEnded = () => {
+        console.log("Audio ended");
+        setIsAiSpeaking(false);
+        setSpeaking("user");
+        if (!isMuted && !isTerminated) {
+          SpeechRecognition.startListening({ continuous: true });
+        }
+      };
+
+      // Handle audio errors
+      const handleError = (e) => {
+        console.error("Audio playback error:", e);
+        setIsAiSpeaking(false);
+        if (!isMuted && !isTerminated) {
+          SpeechRecognition.startListening({ continuous: true });
+        }
+      };
+
+      audioRef.current.addEventListener("play", handlePlay);
+      audioRef.current.addEventListener("ended", handleEnded);
+      audioRef.current.addEventListener("error", handleError);
+
+      return () => {
+        if (audioRef.current) {
+          audioRef.current.removeEventListener("play", handlePlay);
+          audioRef.current.removeEventListener("ended", handleEnded);
+          audioRef.current.removeEventListener("error", handleError);
+        }
+      };
+    };
+
+    const cleanup = setupAudioListeners();
+    return cleanup;
+  }, [isMuted, isTerminated]);
+
   useEffect(() => {
     if (!browserSupportsSpeechRecognition) {
       message.warning("Browser doesn't support speech recognition.");
@@ -51,16 +103,27 @@ const MockMasterAI = ({ params }) => {
     return () => SpeechRecognition.stopListening();
   }, []);
 
+  // Control microphone based on mute button and loading state
   useEffect(() => {
-    if (isMuted) {
-      SpeechRecognition.stopListening();
-    } else if (aiconnectloading) {
+    if (isMuted || aiconnectloading || isAiSpeaking || isTerminated) {
       SpeechRecognition.stopListening();
     } else {
       SpeechRecognition.startListening({ continuous: true });
     }
-  }, [isMuted]);
+  }, [isMuted, aiconnectloading, isAiSpeaking, isTerminated]);
 
+  // AWS Polly initialization
+  useEffect(() => {
+    AWS.config.update({
+      region: "us-east-1",
+      accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY,
+    });
+
+    setPolly(new AWS.Polly());
+  }, []);
+
+  // Handle user speech and silence detection
   useEffect(() => {
     let silenceTimer;
 
@@ -81,16 +144,6 @@ const MockMasterAI = ({ params }) => {
       if (silenceTimer) clearTimeout(silenceTimer);
     };
   }, [transcript]);
-
-  useEffect(() => {
-    if (isAiSpeaking) {
-      SpeechRecognition.stopListening();
-      setSpeaking("ai");
-    } else {
-      SpeechRecognition.startListening({ continuous: true });
-      setSpeaking("user");
-    }
-  }, [isAiSpeaking]);
 
   const createassistant = async () => {
     const assistant = await CreateAssistant();
@@ -133,6 +186,7 @@ const MockMasterAI = ({ params }) => {
         }
       } catch (error) {
         console.error(error);
+        message.error("Error communicating with AI. Please try again.");
       }
     },
     [AIIds.current.threadId, AIIds.current.assistantId]
@@ -148,6 +202,7 @@ const MockMasterAI = ({ params }) => {
         setCaseScenario({ scenario: response?.data?.data?.scenario });
       } catch (error) {
         console.error(error);
+        message.error("Failed to fetch interview scenario.");
       }
     };
     fetchCaseScenario();
@@ -155,71 +210,122 @@ const MockMasterAI = ({ params }) => {
 
   useEffect(() => {
     const initializeAI = async () => {
-      if (CaseScenario.scenario && !isInitialized) {
-        await createassistant();
-        await Createthread();
-        await Createmessage(JSON.stringify(CaseScenario));
-        setIsInitialized(true);
+      if (CaseScenario.scenario && !isInitialized && polly) {
+        try {
+          await createassistant();
+          await Createthread();
+          await Createmessage(JSON.stringify(CaseScenario));
+          setIsInitialized(true);
+        } catch (error) {
+          console.error("Failed to initialize AI:", error);
+          message.error(
+            "Failed to initialize AI. Please refresh and try again."
+          );
+        }
       }
     };
     initializeAI();
-  }, [CaseScenario.scenario]);
+  }, [CaseScenario.scenario, isInitialized, polly]);
 
   useEffect(() => {
     if (isInitialized && text) {
       Createmessage(text);
     }
-  }, [text, isInitialized]);
+  }, [text, isInitialized, Createmessage]);
 
   const storeFeedback = async (feedback) => {
     try {
-      console.log(feedback);
-    } catch (e) {}
+      console.log("Storing feedback:", feedback);
+      // Implement actual feedback storage logic here
+    } catch (e) {
+      console.error("Error storing feedback:", e);
+    }
   };
 
+  // Process AI message and convert to speech
   useEffect(() => {
-    if (AIMessage?.trim() !== "") {
+    if (AIMessage?.trim() !== "" && polly) {
       if (isTerminated) {
-        window.speechSynthesis.cancel();
         storeFeedback(AIMessage);
       }
-      const utterance = new SpeechSynthesisUtterance(AIMessage);
-      utterance.onstart = () => {
-        setIsAiSpeaking(true);
-        setSpeaking("ai");
-        if (aiconnectloading) {
+
+      try {
+        const params = {
+          Text: AIMessage,
+          OutputFormat: "mp3",
+          VoiceId: "Matthew",
+          Engine: "generative",
+        };
+
+        // Use the Polly synthesizeSpeech method
+        polly.synthesizeSpeech(params, (err, data) => {
+          if (err) {
+            console.error("Error with Polly:", err);
+            setAiconnectloading(false);
+            return;
+          }
+
+          // Create a Blob from the audio data
+          const uInt8Array = new Uint8Array(data.AudioStream);
+          const blob = new Blob([uInt8Array.buffer], {
+            type: data.ContentType,
+          });
+          const url = URL.createObjectURL(blob);
           setAiconnectloading(false);
-        }
-      };
 
-      window.speechSynthesis.cancel();
+          // Set the audio source and play with a small delay to ensure preparation
+          if (audioRef.current) {
+            audioRef.current.src = url;
+            audioRef.current.load();
 
-      utterance.rate = 1;
-      utterance.pitch = 1;
+            // Small delay to ensure the browser has time to load the audio
+            setTimeout(() => {
+              const playPromise = audioRef.current.play();
 
-      utterance.onend = () => {
-        setIsAiSpeaking(false);
-        setSpeaking(" ");
-        SpeechRecognition.startListening({ continuous: true });
-      };
-
-      window.speechSynthesis.speak(utterance);
+              if (playPromise !== undefined) {
+                playPromise.catch((error) => {
+                  console.error("Error playing audio:", error);
+                  // If playback fails, make sure we reset the speaking state
+                  setIsAiSpeaking(false);
+                  if (!isMuted && !isTerminated) {
+                    SpeechRecognition.startListening({ continuous: true });
+                  }
+                });
+              }
+            }, 100);
+          }
+        });
+      } catch (err) {
+        console.error("Error processing AI speech:", err);
+        setAiconnectloading(false);
+      }
     }
-  }, [AIMessage]);
+  }, [AIMessage, polly, isMuted, isTerminated]);
 
   const terminateSession = () => {
     setIsTerminated(true);
-    window.speechSynthesis.cancel();
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
     SpeechRecognition.stopListening();
     resetTranscript();
     setAiconnectloading(true);
     setText("Hey Goodbye");
-    
   };
+
+  // Always render the audio element regardless of loading state
+  const renderAudio = () => (
+    <audio
+      ref={audioRef}
+      className="hidden"
+      controls={process.env.NODE_ENV === "development"}
+    />
+  );
 
   if (aiconnectloading) {
     return (
       <div className="flex flex-col justify-center items-center h-screen bg-slate-900">
+        {renderAudio()}
         <div className="bg-slate-800/90 p-8 rounded-2xl border border-slate-700 shadow-xl backdrop-blur-sm">
           <div className="flex flex-col items-center gap-6">
             <motion.div
@@ -229,7 +335,7 @@ const MockMasterAI = ({ params }) => {
             />
             <div className="text-center">
               <h2 className="text-2xl font-semibold text-white mb-2">
-                {isTerminated ? "Genrating the Feedback" : "Connecting to AI"}
+                {isTerminated ? "Generating the Feedback" : "Connecting to AI"}
               </h2>
               <p className="text-slate-400">
                 {isTerminated
@@ -262,6 +368,7 @@ const MockMasterAI = ({ params }) => {
 
   return (
     <div className="min-h-screen bg-[#0F172A] relative overflow-hidden">
+      {renderAudio()}
       {/* Animated Background Waves */}
       <div className="absolute inset-0 opacity-20">
         <motion.div
@@ -449,9 +556,11 @@ const MockMasterAI = ({ params }) => {
             </div>
           </Card>
         </div>
-      </div>{" "}
-      {/* End Call Button */}
+      </div>
+
+      {/* Controls */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col gap-4">
+        {/* End Call Button */}
         <motion.button
           onClick={terminateSession}
           className="bg-gradient-to-r from-slate-800/90 to-slate-900/90 hover:from-slate-700/90 hover:to-slate-800/90 text-white px-8 py-4 rounded-xl flex items-center gap-3 border border-slate-600/50 shadow-lg backdrop-blur-sm group transition-all duration-300"
@@ -466,23 +575,40 @@ const MockMasterAI = ({ params }) => {
           </motion.div>
         </motion.button>
 
+        {/* Mute Button */}
         <motion.button
           className="bg-gradient-to-r from-slate-800/90 to-slate-900/90 hover:from-slate-700/90 hover:to-slate-800/90 text-white p-4 rounded-xl flex items-center gap-3 border border-slate-600/50 shadow-lg backdrop-blur-sm group transition-all duration-300"
           transition={{ type: "spring", stiffness: 400, damping: 17 }}
           onClick={() => setIsMuted(!isMuted)}
+          disabled={isAiSpeaking}
         >
           <motion.div
             initial={{ scale: 1 }}
             whileHover={{ scale: 1.1 }}
             className="relative"
           >
-            {isMuted ? (
-              <MicOff className="w-6 h-6 text-red-400 group-hover:text-red-300 transition-colors duration-300" />
+            {isMuted || isAiSpeaking ? (
+              <MicOff
+                className={`w-6 h-6 ${
+                  isAiSpeaking
+                    ? "text-gray-400"
+                    : "text-red-400 group-hover:text-red-300"
+                } transition-colors duration-300`}
+              />
             ) : (
               <Mic className="w-6 h-6 text-emerald-400 group-hover:text-emerald-300 transition-colors duration-300" />
             )}
           </motion.div>
         </motion.button>
+      </div>
+
+      {/* Status Indicator */}
+      <div className="absolute top-20 right-4 px-4 py-2 bg-slate-800/80 rounded-lg border border-slate-700 text-white backdrop-blur-sm">
+        {isAiSpeaking
+          ? "AI is speaking..."
+          : isMuted
+          ? "Microphone muted"
+          : "Listening..."}
       </div>
     </div>
   );
