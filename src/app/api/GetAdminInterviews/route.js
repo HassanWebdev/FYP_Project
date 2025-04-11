@@ -17,7 +17,6 @@ export async function GET(request) {
 
     const token = authHeader.split(" ")[1];
 
-    console.log('JWT Secret:', process.env.JWT_SECRET); 
     
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.userId;

@@ -19,6 +19,7 @@ import {
 } from "@/lib/helperfunctions";
 import AWS from "aws-sdk";
 import { useRouter } from "next/navigation";
+import { result } from "lodash";
 
 const MockMasterAI = ({ params }) => {
   console.log(params);
@@ -305,8 +306,10 @@ const MockMasterAI = ({ params }) => {
             type: "mock",
           })
         : await axios.post("/storeFeedback", {
-            feedback: parsedFeedback,
+            result: parsedFeedback,
+            caseId: params?.id,
           });
+          console.log(storeFeedback);
     } catch (e) {
       console.error("Error storing feedback:", e);
     }
