@@ -1,83 +1,75 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const interviewSchema = new mongoose.Schema({
   title: {
     type: String,
-    trim: true
+    trim: true,
   },
   scenario: {
     type: String,
   },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    ref: "User",
   },
   result: {
     Success: {
       type: String,
-      enum: ['Excellent', 'Good', 'Average', 'Satisfactory', 'Bad'],
-      default: 'Bad'
+      enum: ["Excellent", "Good", "Average", "Satisfactory", "Bad"],
     },
     AI_Recommendation: {
       type: String,
-      default: ''
     },
     AI_Suggestion: {
       type: String,
-      default: ''
     },
     Technical: {
       type: Number,
-      default: 0
     },
     Communication: {
       type: Number,
-      default: 0
     },
     ProblemSolving: {
       type: Number,
-      default: 0
     },
     SoftSkills: {
       type: Number,
-      default: 0
     },
     Leadership: {
       type: Number,
-      default: 0
-    }
+    },
   },
   status: {
     type: String,
-    enum: ['Not Started', 'In Progress', 'Completed'],
-    default: 'Not Started'
+    enum: ["Not Started", "In Progress", "Completed"],
+    default: "Not Started",
   },
   isInterviewed: {
     type: Boolean,
-    default: false
+    default: false,
   },
   interviewDate: {
-    type: Date
+    type: Date,
   },
   duration: {
     type: Number,
-    default: 0
+    default: 0,
   },
   createdAt: {
     type: Date,
-    default: Date.now
+    default: Date.now,
   },
   updatedAt: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
-
-interviewSchema.pre('save', function(next) {
+interviewSchema.pre("save", function (next) {
   this.updatedAt = Date.now();
   next();
 });
 
-const Interview = mongoose.models.Interview || mongoose.model('Interview', interviewSchema);
+const Interview =
+  mongoose.models.Interview || mongoose.model("Interview", interviewSchema);
 export default Interview;

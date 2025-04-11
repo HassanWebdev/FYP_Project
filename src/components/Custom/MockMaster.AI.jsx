@@ -21,6 +21,7 @@ import AWS from "aws-sdk";
 import { useRouter } from "next/navigation";
 
 const MockMasterAI = ({ params }) => {
+  console.log(params);
   const polyytwo = new AWS.Polly();
   const user = JSON.parse(localStorage.getItem("user"));
   const [text, setText] = useState("");
@@ -36,6 +37,7 @@ const MockMasterAI = ({ params }) => {
   const [aiconnectloading, setAiconnectloading] = useState(true);
   const router = useRouter();
   const audioRef = useRef(null);
+  const [interviewTitle, setInterviewTitle] = useState("");
 
   const AIIds = useRef({
     threadId: "",
@@ -101,11 +103,11 @@ const MockMasterAI = ({ params }) => {
   }, []);
 
   useEffect(() => {
-    // if (isMuted || aiconnectloading || isAiSpeaking || isTerminated) {
-    //   SpeechRecognition.stopListening();
-    // } else {
-    //   SpeechRecognition.startListening({ continuous: true });
-    // }
+    if (isMuted || aiconnectloading || isAiSpeaking || isTerminated) {
+      SpeechRecognition.stopListening();
+    } else {
+      SpeechRecognition.startListening({ continuous: true });
+    }
   }, [isMuted, aiconnectloading, isAiSpeaking, isTerminated]);
 
   useEffect(() => {
@@ -193,6 +195,7 @@ const MockMasterAI = ({ params }) => {
           interviewId: params?.id,
           role: params.role ? params.role : "user",
         });
+        setInterviewTitle(response?.data?.data?.title);
         setCaseScenario({ scenario: response?.data?.data?.scenario });
       } catch (error) {
         console.error(error);
@@ -204,7 +207,7 @@ const MockMasterAI = ({ params }) => {
 
   useEffect(() => {
     const initializeAI = async () => {
-      if ((CaseScenario.scenario && !isInitialized && (polly || polyytwo))) {
+      if (CaseScenario.scenario && !isInitialized && (polly || polyytwo)) {
         try {
           await createassistant();
           await Createthread();
@@ -219,7 +222,7 @@ const MockMasterAI = ({ params }) => {
       }
     };
     initializeAI();
-  }, [CaseScenario.scenario, isInitialized, polly ]);
+  }, [CaseScenario.scenario, isInitialized, polly]);
 
   useEffect(() => {
     if (isInitialized && text) {
@@ -227,9 +230,83 @@ const MockMasterAI = ({ params }) => {
     }
   }, [text, isInitialized, Createmessage]);
 
-  const storeFeedback = async (feedback) => {
+  const generateFeedback = async (messageText = "Hey Goodbye") => {
+    if (!messageText?.trim()) return;
     try {
-      console.log("Storing feedback:", feedback);
+      const message = await CreateMessage(AIIds.current.threadId, messageText);
+      AIIds.current.messageId = message.id;
+
+      const run = await Run(AIIds.current.threadId, AIIds.current.assistantId);
+      AIIds.current.runId = run.id;
+
+      while (true) {
+        const response = await AIResponse(
+          AIIds.current.threadId,
+          AIIds.current.runId
+        );
+
+        if (response?.status === "completed") {
+          console.log("Feedback response:", response);
+          storeFeedback(response?.message);
+          break;
+        }
+      }
+    } catch (error) {
+      console.error(error);
+      message.error("Error communicating with AI. Please try again.");
+    }
+  };
+
+  // Regex to extract the result object from the string
+  function extractResultObject(inputString) {
+    // This regex captures the result object content between ```plaintext and ``` tags
+    const resultRegex = /```plaintext\s*result:\s*(\{[\s\S]*?\})\s*```/;
+    const match = inputString.match(resultRegex);
+
+    if (match && match[1]) {
+      try {
+        // Convert the matched string into a valid JSON format
+        const jsonStr = match[1]
+          .replace(/(\w+):/g, '"$1":') // Convert property names to quoted strings
+          .replace(/'/g, '"') // Replace single quotes with double quotes
+          .replace(/(\s*default:\s*)('[^']*'|"[^"]*"|[^,}\s]+)/g, '$1"$2"') // Handle default values
+          .replace(/(\s*enum:\s*)\[(.*?)\]/g, (_, p1, p2) => {
+            // Process enum arrays
+            const enumValues = p2
+              .split(",")
+              .map((v) =>
+                v.trim().startsWith("'") || v.trim().startsWith('"')
+                  ? v.trim()
+                  : `"${v.trim()}"`
+              )
+              .join(",");
+            return `${p1}[${enumValues}]`;
+          })
+          .replace(/(\s*type:\s*)(\w+)/g, '$1"$2"'); // Quote type values
+
+        // Parse the formatted string into a JavaScript object
+        return JSON.parse(`{"result":${jsonStr}}`);
+      } catch (e) {
+        console.error("Error parsing the result object:", e);
+        return null;
+      }
+    }
+    return null;
+  }
+
+  const storeFeedback = async (feedback) => {
+    const parsedFeedback = extractResultObject(feedback);
+    try {
+      const storeFeedback = params?.role
+        ? await axios.post("/MockInterviewcreation", {
+            title,
+            interviewTitle,
+            feedback: parsedFeedback,
+            type: "mock",
+          })
+        : await axios.post("/storeFeedback", {
+            feedback: parsedFeedback,
+          });
     } catch (e) {
       console.error("Error storing feedback:", e);
     }
@@ -238,7 +315,7 @@ const MockMasterAI = ({ params }) => {
   useEffect(() => {
     if (AIMessage?.trim() !== "" && (polly || polyytwo)) {
       if (isTerminated) {
-        storeFeedback(AIMessage);
+        generateFeedback();
       }
 
       try {
@@ -246,7 +323,7 @@ const MockMasterAI = ({ params }) => {
           Text: AIMessage,
           OutputFormat: "mp3",
           VoiceId: "Matthew",
-          Engine: "neural",
+          Engine: "generative",
         };
 
         polly.synthesizeSpeech(params, (err, data) => {

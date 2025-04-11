@@ -5,13 +5,11 @@ import jwt from "jsonwebtoken";
 
 export async function POST(req) {
   try {
-    
     const authHeader = req.headers.get("authorization");
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return NextResponse.json({ error: "No token provided" }, { status: 401 });
     }
 
-    
     const token = authHeader.split(" ")[1];
     let decodedToken;
     try {
@@ -24,12 +22,11 @@ export async function POST(req) {
 
     const data = await req.json();
 
-    
     const interview = new Interview({
       title: data.title,
       scenario: data.scenario,
-      userId: decodedToken.userId, 
-      feedback: data.feedback,
+      userId: decodedToken.userId,
+      results:  [],
       createdAt: new Date(),
       updatedAt: new Date(),
       isInterviewed: false,
@@ -37,13 +34,12 @@ export async function POST(req) {
       duration: 0,
     });
 
-    
     await interview.save();
 
     return NextResponse.json(
-      { 
-        message: "Interview created successfully", 
-        interview_id: interview._id 
+      {
+        message: "Interview created successfully",
+        interview_id: interview._id,
       },
       { status: 201 }
     );
