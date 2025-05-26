@@ -20,6 +20,7 @@ import {
 import AWS from "aws-sdk";
 import { useRouter } from "next/navigation";
 import { result } from "lodash";
+import { toast } from "react-toastify";
 
 const MockMasterAI = ({ params }) => {
   console.log(params);
@@ -39,6 +40,7 @@ const MockMasterAI = ({ params }) => {
   const router = useRouter();
   const audioRef = useRef(null);
   const [interviewTitle, setInterviewTitle] = useState("");
+  const[caseId, setCaseId] = useState(params?.id || "");
 
   const AIIds = useRef({
     threadId: "",
@@ -197,6 +199,7 @@ const MockMasterAI = ({ params }) => {
           role: params.role ? params.role : "user",
         });
         setInterviewTitle(response?.data?.data?.title);
+
         setCaseScenario({ scenario: response?.data?.data?.scenario });
       } catch (error) {
         console.error(error);
@@ -245,7 +248,7 @@ const MockMasterAI = ({ params }) => {
           AIIds.current.threadId,
           AIIds.current.runId
         );
-
+        console.log(response);
         if (response?.status === "completed") {
           console.log("Feedback response:", response);
           storeFeedback(response?.message);
@@ -296,20 +299,21 @@ const MockMasterAI = ({ params }) => {
   }
 
   const storeFeedback = async (feedback) => {
-    const parsedFeedback = extractResultObject(feedback);
+    const parsedFeedback = await extractResultObject(feedback);
+    console.log(parsedFeedback);
     try {
       const storeFeedback = params?.role
-        ? await axios.post("/MockInterviewcreation", {
-            title,
-            interviewTitle,
-            feedback: parsedFeedback,
-            type: "mock",
+        ? await axios.post("/StoreMockResult", {
+          mockInterviewId: params?.id,
+          result: parsedFeedback,
+          userId: user?.id,
           })
         : await axios.post("/storeFeedback", {
             result: parsedFeedback,
             caseId: params?.id,
           });
-          console.log(storeFeedback);
+      console.log("Feedback stored:", storeFeedback);
+      toast.success("Feedback stored successfully");
     } catch (e) {
       console.error("Error storing feedback:", e);
     }
@@ -319,6 +323,7 @@ const MockMasterAI = ({ params }) => {
     if (AIMessage?.trim() !== "" && (polly || polyytwo)) {
       if (isTerminated) {
         generateFeedback();
+        return;
       }
 
       try {
@@ -378,16 +383,9 @@ const MockMasterAI = ({ params }) => {
     SpeechRecognition.stopListening();
     resetTranscript();
     setAiconnectloading(true);
-    // setText("Hey Goodbye");
   };
 
-  const renderAudio = () => (
-    <audio
-      ref={audioRef}
-      className="hidden"
-      controls={process.env.NODE_ENV === "development"}
-    />
-  );
+  const renderAudio = () => <audio ref={audioRef} className="hidden" />;
 
   if (aiconnectloading) {
     return (

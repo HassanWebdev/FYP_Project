@@ -4,9 +4,10 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import dynamic from "next/dynamic";
-import { LogOut, Plus } from "lucide-react";
+import { LogOut, Plus, Loader } from "lucide-react";
 import { useRouter } from "next/navigation";
 import withauth from "./withauth";
+import axiosInstance from "@/lib/axioshttp";
 
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
@@ -17,18 +18,15 @@ function Hero() {
   const [currentTime, setCurrentTime] = useState("");
   const welcomeRef = useRef(null);
   const timeRef = useRef(null);
-  const metricsRef = useRef(null);
-  const chartsRef = useRef(null);
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    
     setCurrentTime(new Date().toLocaleTimeString());
-
     
     const timer = setInterval(() => {
       setCurrentTime(new Date().toLocaleTimeString());
     }, 1000);
-
     
     return () => clearInterval(timer);
   }, []);
@@ -50,6 +48,28 @@ function Hero() {
     }
   }, []);
 
+  // Fetch dashboard data
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      if (userRole === "admin") {
+        try {
+          setLoading(true);
+          const response = await axiosInstance.get('/GetAdminDashboard');
+          console.log("Dashboard data:", response.data.data);
+          setDashboardData(response.data.data);
+        } catch (error) {
+          console.error('Error fetching dashboard data:', error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    if (userRole) {
+      fetchDashboardData();
+    }
+  }, [userRole]);
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -63,18 +83,6 @@ function Hero() {
       router.push("/Interviews/generate");
     }
   };
-
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
 
   useGSAP(() => {
     const container = document.createElement("div");
@@ -212,6 +220,7 @@ function Hero() {
   }, []);
 
   
+  // Configure charts based on real data
   const interviewChartOptions = {
     chart: {
       type: "bar",
@@ -258,6 +267,7 @@ function Hero() {
     },
   };
 
+  // We'll keep this data static as the API doesn't provide daily statistics
   const interviewSeries = [
     {
       name: "Interviews",
@@ -265,6 +275,15 @@ function Hero() {
     },
   ];
 
+  // Configure skills chart based on real data
+  const skillAverages = dashboardData?.skillAverages || {
+    Technical: 0,
+    Communication: 0,
+    ProblemSolving: 0,
+    SoftSkills: 0,
+    Leadership: 0
+  };
+  
   const performanceChartOptions = {
     chart: {
       type: "polarArea",
@@ -307,8 +326,15 @@ function Hero() {
     },
   };
 
-  const performanceSeries = [85, 75, 90, 82, 78];
+  const performanceSeries = [
+    skillAverages.Technical,
+    skillAverages.Communication,
+    skillAverages.ProblemSolving,
+    skillAverages.SoftSkills,
+    skillAverages.Leadership
+  ];
 
+  // Configure donut chart based on real data
   const donutChartOptions = {
     chart: {
       type: "donut",
@@ -317,8 +343,8 @@ function Hero() {
       },
       background: "#1e293b",
     },
-    colors: ["#22d3ee", "#a855f7", "#fbbf24", "#f43f5e"],
-    labels: ["Excellent", "Good", "Average", "Needs Improvement"],
+    colors: ["#22d3ee", "#a855f7", "#fbbf24", "#f43f5e", "#ef4444"],
+    labels: ["Excellent", "Good", "Satisfactory", "Average", "Bad"],
     plotOptions: {
       pie: {
         startAngle: -90,
@@ -351,17 +377,20 @@ function Hero() {
     },
   };
 
-  const donutSeries = [45, 30, 15, 10];
+  const donutSeries = dashboardData?.ratingStats?.donutChartData || [0, 0, 0, 0, 0];
+
+  // Loading indicator component
+  const LoadingSpinner = () => (
+    <div className="flex justify-center items-center w-full h-full">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+    </div>
+  );
 
   if (userRole === "admin") {
     return (
       <div className="min-h-screen bg-slate-900 p-8">
-        {/* <div
-          id="mouse"
-          className={`w-5 h-5 bg-blue-500 fixed top-0 left-0 z-[99] rounded-full pointer-events-none blur-sm`}
-        ></div> */}
-
         <div className="max-w-full">
+          {/* Welcome header section */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
             <div
               ref={welcomeRef}
@@ -425,25 +454,20 @@ function Hero() {
             </div>
           </div>
 
+          {/* Metrics cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             {[
               {
                 title: "Total Interviews Created",
-                value: "48",
-                change: "↑ 15% increase",
-                changeColor: "text-emerald-400",
+                value: loading ? <LoadingSpinner /> : dashboardData?.totalInterviews?.length || "N/A",
               },
               {
-                title: "Active Interviews",
-                value: "32",
-                change: "↑ 12% increase",
-                changeColor: "text-emerald-400",
+                title: "Completed Interviews",
+                value: loading ? <LoadingSpinner /> : dashboardData?.completedInterviews?.length || "N/A",
               },
               {
                 title: "Completion Rate",
-                value: "78%",
-                change: "↑ 5% increase",
-                changeColor: "text-emerald-400",
+                value: loading ? <LoadingSpinner /> : `${dashboardData?.completionPercentage || 0}%`,
               },
             ].map((metric, index) => (
               <Card
@@ -454,47 +478,53 @@ function Hero() {
                 <div className="absolute inset-[2px] bg-slate-800 rounded-lg z-10"></div>
                 <div className="relative z-20 p-6">
                   <h3 className="text-slate-400 text-sm">{metric.title}</h3>
-                  <p className="text-3xl font-bold text-white mt-2">
+                  <div className="text-3xl font-bold text-white mt-2">
                     {metric.value}
-                  </p>
-                  <p className={`${metric.changeColor} text-sm mt-2`}>
-                    {metric.change}
-                  </p>
+                  </div>
                 </div>
               </Card>
             ))}
           </div>
 
+          {/* Charts */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="bg-slate-800 border-slate-700">
+            <Card className="bg-slate-800 border-slate-700 ">
               <CardHeader>
                 <CardTitle className="text-white">
-                  Interview Statistics
+                  Skills Analysis
                 </CardTitle>
               </CardHeader>
               <CardContent className="h-[400px]">
-                <Chart
-                  options={interviewChartOptions}
-                  series={interviewSeries}
-                  type="bar"
-                  height="100%"
-                />
+                {loading ? (
+                  <LoadingSpinner />
+                ) : (
+                  <Chart
+                    options={performanceChartOptions}
+                    series={performanceSeries}
+                    type="polarArea"
+                    height="100%"
+                  />
+                )}
               </CardContent>
             </Card>
 
             <Card className="bg-slate-800 border-slate-700">
               <CardHeader>
                 <CardTitle className="text-white">
-                  Completion Analytics
+                  Success Rating Distribution
                 </CardTitle>
               </CardHeader>
               <CardContent className="h-[400px]">
-                <Chart
-                  options={donutChartOptions}
-                  series={donutSeries}
-                  type="donut"
-                  height="100%"
-                />
+                {loading ? (
+                  <LoadingSpinner />
+                ) : (
+                  <Chart
+                    options={donutChartOptions}
+                    series={donutSeries}
+                    type="donut"
+                    height="100%"
+                  />
+                )}
               </CardContent>
             </Card>
           </div>
@@ -503,10 +533,11 @@ function Hero() {
     );
   }
 
-  
+  // For non-admin users
   return (
     <div className="min-h-screen bg-slate-900 p-8">
       <div className="max-w-full">
+        {/* Welcome header section */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div
             ref={welcomeRef}
@@ -570,6 +601,8 @@ function Hero() {
             </button>
           </div>
         </div>
+        
+        {/* Performance metrics card */}
         <Card className="col-span-full md:col-span-2 bg-slate-800 border-slate-700 mb-6 relative group overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           <div className="absolute inset-[2px] bg-slate-800 rounded-lg z-10"></div>
@@ -582,27 +615,19 @@ function Hero() {
                 {[
                   {
                     title: "Total Interviews",
-                    value: "125",
-                    change: "↑ 12% increase",
-                    changeColor: "text-emerald-400",
+                    value: "N/A",
                   },
                   {
                     title: "Success Rate",
-                    value: "84%",
-                    change: "↑ 8% increase",
-                    changeColor: "text-emerald-400",
+                    value: "N/A",
                   },
                   {
                     title: "Average Rating",
-                    value: "4.2/5",
-                    change: "↑ 0.3 points",
-                    changeColor: "text-emerald-400",
+                    value: "N/A",
                   },
                   {
                     title: "Response Time",
-                    value: "24min",
-                    change: "↓ 2min slower",
-                    changeColor: "text-rose-400",
+                    value: "N/A",
                   },
                 ].map((metric, index) => (
                   <div
@@ -618,9 +643,6 @@ function Hero() {
                       <p className="text-3xl font-bold text-white mt-2">
                         {metric.value}
                       </p>
-                      <p className={`${metric.changeColor} text-sm mt-2`}>
-                        {metric.change}
-                      </p>
                     </div>
                   </div>
                 ))}
@@ -628,6 +650,8 @@ function Hero() {
             </CardContent>
           </div>
         </Card>
+        
+        {/* Charts */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[
             {

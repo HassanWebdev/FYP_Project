@@ -19,6 +19,11 @@ const mockCaseSchema = new mongoose.Schema({
   exhibit: {
     type: Array,
   },
+  status:{
+    type: String,
+    enum: ["completed", "pending"],
+    default: "pending",
+  },
   results: [
     {
       Success: {

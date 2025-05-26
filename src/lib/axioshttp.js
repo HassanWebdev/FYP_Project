@@ -7,7 +7,6 @@ const axiosInstance = axios.create({
   },
 });
 
-
 axiosInstance.interceptors.request.use(
   (config) => {
     if (typeof window !== "undefined") {
@@ -23,7 +22,6 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-
 axiosInstance.interceptors.response.use(
   (response) => {
     return response;
@@ -32,7 +30,12 @@ axiosInstance.interceptors.response.use(
     console.log(error);
     if (error.response?.status === 401) {
       localStorage.removeItem("token");
-      window.location.href = "/login";
+      if (
+        window.location.href !== "/login" &&
+        window.location.href !== "/register"
+      ) {
+        window.location.href = "/login";
+      }
     }
     return Promise.reject(error);
   }

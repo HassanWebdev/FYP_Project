@@ -26,8 +26,9 @@ export async function POST(req) {
     if (!findCase) {
       return NextResponse.json({ error: "Case not found" }, { status: 404 });
     }
+    console.log(result, caseId);
     const res = await Interview.findByIdAndUpdate(caseId, {
-      result: result,
+      result: result?.result,
       status: "completed",
     });
 

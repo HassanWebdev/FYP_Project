@@ -5,13 +5,11 @@ import jwt from "jsonwebtoken";
 
 export async function POST(req) {
   try {
-    
     const authHeader = req.headers.get("authorization");
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return NextResponse.json({ error: "No token provided" }, { status: 401 });
     }
 
-    
     const token = authHeader.split(" ")[1];
     let decodedToken;
     try {
@@ -25,10 +23,8 @@ export async function POST(req) {
     const { type, title, scenario, result, exhibit_title, exhibit } =
       await req.json();
 
-    
     const resultArray = Array.isArray(result) ? result : [result];
 
-    
     if (!title || !scenario || !type) {
       return NextResponse.json(
         { error: "Please provide all required fields" },
@@ -36,7 +32,6 @@ export async function POST(req) {
       );
     }
 
-    
     if (
       resultArray &&
       (!Array.isArray(resultArray) ||
@@ -58,59 +53,51 @@ export async function POST(req) {
       );
     }
 
-    
     const existingMockCases = await MockCase.find({ title: title });
 
     if (existingMockCases && existingMockCases.length > 0) {
-      
       const existingMockCase = existingMockCases[0];
       console.log(existingMockCase);
 
-      
       if (resultArray && resultArray.length > 0) {
         try {
-          
           const matchingIndex = existingMockCase.results.findIndex(
-            (result) => result.user && result.user.toString() === resultArray[0].user
+            (result) =>
+              result.user && result.user.toString() === resultArray[0].user
           );
-      
-          
+
           if (matchingIndex !== -1) {
             existingMockCase.results[matchingIndex] = resultArray[0];
           } else {
-            
             existingMockCase.results.push(...resultArray);
             existingMockCase.updatedAt = new Date();
-          
-            
+
             if (exhibit_title) existingMockCase.exhibit_title = exhibit_title;
             if (exhibit) existingMockCase.exhibit = exhibit;
-        
+
             await existingMockCase.save();
             return NextResponse.json(
               {
                 message: "Results added to existing mock case successfully",
                 mockCase_id: existingMockCase._id,
-                allCases: existingMockCases, 
+                allCases: existingMockCases,
               },
               { status: 201 }
             );
           }
-      
-          
+
           existingMockCase.updatedAt = new Date();
-          
-          
+
           if (exhibit_title) existingMockCase.exhibit_title = exhibit_title;
           if (exhibit) existingMockCase.exhibit = exhibit;
-      
+
           await existingMockCase.save();
-      
+
           return NextResponse.json(
             {
               message: "Results updated in existing mock case successfully",
               mockCase_id: existingMockCase._id,
-              allCases: existingMockCases, 
+              allCases: existingMockCases,
             },
             { status: 201 }
           );
@@ -121,7 +108,6 @@ export async function POST(req) {
     }
     console.log(resultArray);
 
-    
     const mockCase = new MockCase({
       userId: decodedToken.userId,
       title,
@@ -134,7 +120,6 @@ export async function POST(req) {
       updatedAt: new Date(),
     });
 
-    
     await mockCase.save();
 
     return NextResponse.json(
