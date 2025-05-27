@@ -1,0 +1,18 @@
+.ant-modal-content {
+  background-color: #1e293b !important; /* Slate-800 */
+  color: #e2e8f0 !important; /* Slate-200 */
+}
+.ant-modal-title {
+  color: #e2e8f0 !important; /* Slate-200 */
+  background: #1e293b !important; /* Slate-800 */
+}
+.ant-badge-status-text{
+  color: #e2e8f0 !important; /* Slate-200 */
+}
+.ant-modal-header {
+  background-color: #1e293b !important; /* Slate-800 */
+  color: #e2e8f0 !important; /* Slate-200 */
+}
+.ant-modal-close-x {
+  color: #e2e8f0 !important; /* Slate-200 */
+}

@@ -8,14 +8,16 @@ import "./styles.css";
 import Link from "next/link";
 import withauth from "../../components/Custom/withauth";
 import axios from "../../lib/axioshttp";
-import { useGSAP } from "@gsap/react";
-import gsap from "gsap";
 
 function Page() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("1");
   const [Interviews, setInterviews] = useState([]);
   const [loading, setLoading] = useState(true);
+  const user = localStorage.getItem("user");
+  const role = user ? JSON.parse(user).role : "user";
+
+
 
   useEffect(() => {
     const fetchInterviews = async () => {
@@ -53,7 +55,7 @@ function Page() {
             </p>
           </div>
           <Link
-            href="/Interviews/generate"
+            href={`${role === "admin" ? "/create-interview" : "/Interviews/generate"}`}
             className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition-all duration-300 border-2 border-transparent hover:border-blue-400 shadow-lg hover:shadow-blue-500/25"
           >
             Create Your First Interview

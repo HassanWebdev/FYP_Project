@@ -218,7 +218,7 @@ function Page() {
               </Card>
             ))
           ) : (
-            <Empty description="No interviews found" />
+            <Empty description="No interviews found" className="!text-slate-400" />
           )}
         </div>
       ),

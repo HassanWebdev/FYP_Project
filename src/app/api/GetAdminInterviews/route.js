@@ -25,7 +25,11 @@ export async function GET(request) {
     await connectToDB();
 
     
-    const mockCases = await MockCase.find({}).sort({ createdAt: -1 });
+    // Modified query to populate user data
+    const mockCases = await MockCase.find({})
+      .populate('userId')  // Populate the main user data
+      .populate('results.user')  // Populate user data in results array
+      .sort({ createdAt: -1 });
 
     if (!mockCases) {
       return NextResponse.json(
