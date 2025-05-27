@@ -23,11 +23,11 @@ function Hero() {
 
   useEffect(() => {
     setCurrentTime(new Date().toLocaleTimeString());
-    
+
     const timer = setInterval(() => {
       setCurrentTime(new Date().toLocaleTimeString());
     }, 1000);
-    
+
     return () => clearInterval(timer);
   }, []);
 
@@ -51,17 +51,21 @@ function Hero() {
   // Fetch dashboard data
   useEffect(() => {
     const fetchDashboardData = async () => {
-      if (userRole === "admin") {
-        try {
-          setLoading(true);
-          const response = await axiosInstance.get('/GetAdminDashboard');
-          console.log("Dashboard data:", response.data.data);
-          setDashboardData(response.data.data);
-        } catch (error) {
-          console.error('Error fetching dashboard data:', error);
-        } finally {
-          setLoading(false);
+      try {
+        setLoading(true);
+        let endpoint = "/GetUserDashboard";
+
+        if (userRole === "admin") {
+          endpoint = "/GetAdminDashboard";
         }
+
+        const response = await axiosInstance.get(endpoint);
+        console.log("Dashboard data:", response.data.data);
+        setDashboardData(response.data.data);
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -219,7 +223,6 @@ function Hero() {
     };
   }, []);
 
-  
   // Configure charts based on real data
   const interviewChartOptions = {
     chart: {
@@ -281,9 +284,9 @@ function Hero() {
     Communication: 0,
     ProblemSolving: 0,
     SoftSkills: 0,
-    Leadership: 0
+    Leadership: 0,
   };
-  
+
   const performanceChartOptions = {
     chart: {
       type: "polarArea",
@@ -331,7 +334,7 @@ function Hero() {
     skillAverages.Communication,
     skillAverages.ProblemSolving,
     skillAverages.SoftSkills,
-    skillAverages.Leadership
+    skillAverages.Leadership,
   ];
 
   // Configure donut chart based on real data
@@ -377,7 +380,7 @@ function Hero() {
     },
   };
 
-  const donutSeries = dashboardData?.ratingStats?.donutChartData || [0, 0, 0, 0, 0];
+  const donutSeries = dashboardData?.ratingStats?.donutChartData ;
 
   // Loading indicator component
   const LoadingSpinner = () => (
@@ -408,7 +411,7 @@ function Hero() {
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div welssName="flex items-center gap-4">
               <button
                 onClick={handleCreateInterview}
                 className="relative inline-flex items-center gap-2 px-6 py-3 text-white overflow-hidden rounded-xl group h-[88px] "
@@ -459,15 +462,18 @@ function Hero() {
             {[
               {
                 title: "Total Interviews Created",
-                value: loading ? <LoadingSpinner /> : dashboardData?.totalInterviews?.length || "N/A",
+                value: dashboardData?.totalInterviews?.length || "N/A",
+                isLoading: loading,
               },
               {
                 title: "Completed Interviews",
-                value: loading ? <LoadingSpinner /> : dashboardData?.completedInterviews?.length || "N/A",
+                value: dashboardData?.completedInterviews?.length || "N/A",
+                isLoading: loading,
               },
               {
                 title: "Completion Rate",
-                value: loading ? <LoadingSpinner /> : `${dashboardData?.completionPercentage || 0}%`,
+                value: `${dashboardData?.completionPercentage || 0}%`,
+                isLoading: loading,
               },
             ].map((metric, index) => (
               <Card
@@ -478,9 +484,15 @@ function Hero() {
                 <div className="absolute inset-[2px] bg-slate-800 rounded-lg z-10"></div>
                 <div className="relative z-20 p-6">
                   <h3 className="text-slate-400 text-sm">{metric.title}</h3>
-                  <div className="text-3xl font-bold text-white mt-2">
-                    {metric.value}
-                  </div>
+                  {metric.isLoading ? (
+                    <div className="text-3xl font-bold text-white mt-2">
+                      <LoadingSpinner />
+                    </div>
+                  ) : (
+                    <div className="text-3xl font-bold text-white mt-2">
+                      {metric.value}
+                    </div>
+                  )}
                 </div>
               </Card>
             ))}
@@ -490,9 +502,7 @@ function Hero() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="bg-slate-800 border-slate-700 ">
               <CardHeader>
-                <CardTitle className="text-white">
-                  Skills Analysis
-                </CardTitle>
+                <CardTitle className="text-white">Skills Analysis</CardTitle>
               </CardHeader>
               <CardContent className="h-[400px]">
                 {loading ? (
@@ -601,7 +611,7 @@ function Hero() {
             </button>
           </div>
         </div>
-        
+
         {/* Performance metrics card */}
         <Card className="col-span-full md:col-span-2 bg-slate-800 border-slate-700 mb-6 relative group overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -611,23 +621,31 @@ function Hero() {
               <CardTitle className="text-white">Performance Metrics</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[
                   {
                     title: "Total Interviews",
-                    value: "N/A",
+                    value: loading ? (
+                      <LoadingSpinner />
+                    ) : (
+                      dashboardData?.totalInterviews?.length
+                    ),
                   },
                   {
-                    title: "Success Rate",
-                    value: "N/A",
+                    title: "Completion Rate",
+                    value: loading ? (
+                      <LoadingSpinner />
+                    ) : (
+                      `${dashboardData?.completionPercentage || 0}%`
+                    ),
                   },
                   {
                     title: "Average Rating",
-                    value: "N/A",
-                  },
-                  {
-                    title: "Response Time",
-                    value: "N/A",
+                    value: loading ? (
+                      <LoadingSpinner />
+                    ) : (
+                      dashboardData?.averageRating || "N/A"
+                    ),
                   },
                 ].map((metric, index) => (
                   <div
@@ -640,9 +658,15 @@ function Hero() {
                       <p className="text-sm text-slate-400 group-hover/metric:text-white transition-colors duration-300">
                         {metric.title}
                       </p>
-                      <p className="text-3xl font-bold text-white mt-2">
-                        {metric.value}
-                      </p>
+                      {metric.isLoading ? (
+                        <div className="text-3xl font-bold text-white mt-2">
+                          <LoadingSpinner />
+                        </div>
+                      ) : (
+                        <div className="text-3xl font-bold text-white mt-2">
+                          {metric.value}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -650,63 +674,46 @@ function Hero() {
             </CardContent>
           </div>
         </Card>
-        
+
         {/* Charts */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[
-            {
-              title: "Interview Analytics",
-              span: "lg:col-span-2",
-              chart: (
-                <Chart
-                  options={interviewChartOptions}
-                  series={interviewSeries}
-                  type="bar"
-                  height="100%"
-                />
-              ),
-            },
-            {
-              title: "Success Distribution",
-              span: "lg:col-span-1",
-              chart: (
-                <Chart
-                  options={donutChartOptions}
-                  series={donutSeries}
-                  type="donut"
-                  height="100%"
-                />
-              ),
-            },
-            {
-              title: "Skill Analysis",
-              span: "col-span-full",
-              chart: (
+        <div className="grid grid-cols-1 ">
+          <Card className="bg-slate-800 border-slate-700 ">
+            <CardHeader>
+              <CardTitle className="text-white">Skills Analysis</CardTitle>
+            </CardHeader>
+            <CardContent className="h-[400px]">
+              {loading ? (
+                <LoadingSpinner />
+              ) : (
                 <Chart
                   options={performanceChartOptions}
                   series={performanceSeries}
                   type="polarArea"
                   height="100%"
                 />
-              ),
-            },
-          ].map((item, index) => (
-            <Card
-              key={index}
-              className={`${item.span} bg-slate-800 border-slate-700 relative group overflow-hidden`}
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="absolute inset-[2px] bg-slate-800 rounded-lg z-10"></div>
-              <div className="relative z-20">
-                <CardHeader>
-                  <CardTitle className="text-white transform group-hover:-translate-y-1 transition-transform duration-300">
-                    {item.title}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="h-[300px]">{item.chart}</CardContent>
-              </div>
-            </Card>
-          ))}
+              )}
+            </CardContent>
+          </Card>
+
+          {/* <Card className="bg-slate-800 border-slate-700">
+            <CardHeader>
+              <CardTitle className="text-white">
+                Success Rating Distribution
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="h-[400px]">
+              {loading ? (
+                <LoadingSpinner />
+              ) : (
+                <Chart
+                  options={donutChartOptions}
+                  series={donutSeries}
+                  type="donut"
+                  height="100%"
+                />
+              )}
+            </CardContent>
+          </Card> */}
         </div>
       </div>
     </div>

@@ -314,6 +314,7 @@ const MockMasterAI = ({ params }) => {
           });
       console.log("Feedback stored:", storeFeedback);
       toast.success("Feedback stored successfully");
+      router.push(`/My-Interviews`);
     } catch (e) {
       console.error("Error storing feedback:", e);
     }

@@ -135,4 +135,8 @@ html.lenis, html.lenis body {
     display: none;
   }
   
+  
 }
+.ant-empty-description {
+    color: #e2e8f0 !important; /* Slate-200 */
+  }

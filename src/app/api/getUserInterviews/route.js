@@ -3,6 +3,7 @@ import connectToDB from "../connectDB";
 import jwt from "jsonwebtoken";
 import Interview from "../models/InterviewModal";
 import MockInterview from "../models/MockCasesAdd";
+import User from "../models/UserregisterModal";
 
 export async function GET(request) {
   try {
@@ -18,6 +19,8 @@ export async function GET(request) {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.userId;
+    const getUserRole = await User.findById(userId);
+    console.log("User Role:", getUserRole.role);
 
     await connectToDB();
 
@@ -25,10 +28,16 @@ export async function GET(request) {
       userId: userId,
       status: "completed",
     }).sort({ createdAt: -1 });
-    const adminInterviews = await MockInterview.find({
-      userId: userId,
-      status: "completed",
-    }).sort({ createdAt: -1 });
+
+    const adminInterviews =
+      getUserRole.role === "admin"
+        ? await MockInterview.find({
+            userId: userId,
+            status: "completed",
+          }).sort({ createdAt: -1 })
+        : await MockInterview.find({
+            "results.user": userId,
+          }).sort({ createdAt: -1 });
 
     const totalInterviews = [...mockInterviews, ...adminInterviews];
 
