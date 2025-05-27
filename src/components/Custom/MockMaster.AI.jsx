@@ -642,7 +642,7 @@ const MockMasterAI = ({ params }) => {
         </motion.button>
 
         {/* Mute Button */}
-        <motion.button
+        {/* <motion.button
           className="bg-gradient-to-r from-slate-800/90 to-slate-900/90 hover:from-slate-700/90 hover:to-slate-800/90 text-white p-4 rounded-xl flex items-center gap-3 border border-slate-600/50 shadow-lg backdrop-blur-sm group transition-all duration-300"
           transition={{ type: "spring", stiffness: 400, damping: 17 }}
           onClick={() => setIsMuted(!isMuted)}
@@ -665,7 +665,7 @@ const MockMasterAI = ({ params }) => {
               <Mic className="w-6 h-6 text-emerald-400 group-hover:text-emerald-300 transition-colors duration-300" />
             )}
           </motion.div>
-        </motion.button>
+        </motion.button> */}
       </div>
 
       {/* Status Indicator */}
