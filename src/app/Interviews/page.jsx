@@ -14,10 +14,12 @@ function Page() {
   const [activeTab, setActiveTab] = useState("1");
   const [Interviews, setInterviews] = useState([]);
   const [loading, setLoading] = useState(true);
-  const user = localStorage.getItem("user");
-  const role = user ? JSON.parse(user).role : "user";
 
-
+  let role = "user"; // Default role
+  if (typeof window !== "undefined") {
+    const user = localStorage.getItem("user");
+    role = user ? JSON.parse(user).role : "user";
+  }
 
   useEffect(() => {
     const fetchInterviews = async () => {
@@ -37,7 +39,6 @@ function Page() {
     fetchInterviews();
   }, [activeTab]);
 
-
   const LoadingSpinner = () => (
     <div className="flex justify-center items-center w-full h-screen p-10">
       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
@@ -55,7 +56,9 @@ function Page() {
             </p>
           </div>
           <Link
-            href={`${role === "admin" ? "/create-interview" : "/Interviews/generate"}`}
+            href={`${
+              role === "admin" ? "/create-interview" : "/Interviews/generate"
+            }`}
             className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition-all duration-300 border-2 border-transparent hover:border-blue-400 shadow-lg hover:shadow-blue-500/25"
           >
             Create Your First Interview
